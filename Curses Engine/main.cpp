@@ -21,7 +21,7 @@ int main()
 		cs.GetWindow(L"offset").DrawBox();
 		cs.GetWindow(L"offset").Write(1, 1, "YOU DIED!");
 
-		cs.GetWindow(L"wentral").GetCh();
+		cs.GetWindow(L"central").GetCh();
 	}
 	catch (const curses::Curses::Exception& e)
 	{

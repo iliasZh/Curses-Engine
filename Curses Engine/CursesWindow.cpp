@@ -1,4 +1,5 @@
 #include "CursesWindow.h"
+#include <sstream>
 
 const wchar_t* curses::Curses::Exception::what() const noexcept
 {
@@ -9,6 +10,18 @@ const wchar_t* curses::Curses::Exception::what() const noexcept
         << "Line: " << line << std::endl;
     whatBuffer = wss.str();
     return whatBuffer.c_str();
+}
+
+curses::Curses::Curses()
+{
+	initscr();
+	SetEchoMode(echoEnabled);
+	SetCursorMode(cursorMode);
+}
+
+curses::Curses::~Curses()
+{
+	endwin();
 }
 
 void curses::Curses::AddWindow(std::wstring name, int startX, int startY, int width, int height)
@@ -39,7 +52,7 @@ void curses::Curses::AddWindow(std::wstring name, int startX, int startY, int wi
 	);
 }
 
-curses::Window& curses::Curses::GetWindow(std::wstring name)
+curses::Curses::Window& curses::Curses::GetWindow(std::wstring name)
 {
     auto it = windows.find(name);
     if (it == windows.end())
@@ -70,4 +83,36 @@ void curses::Curses::SetEchoMode(bool enable)
 	echoEnabled = enable;
 }
 
+curses::Curses::Window::~Window()
+{
+	// clear box and contents
+	std::string fill(width, ' ');
+	for (int i = 0; i < height; ++i)
+	{
+		mvwprintw(win, 0, i, fill.c_str());
+	}
+	wrefresh(win);
+	//wborder(win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+	delwin(win);
+}
 
+void curses::Curses::Window::DrawBox()
+{
+	box(win, 0, 0);
+	wrefresh(win);
+}
+
+void curses::Curses::Window::Write(int x, int y, std::string str)
+{
+	assert(x >= 0 && x < width);
+	assert(y >= 0 && y < height);
+	assert(str.length() < width - x);
+	mvwprintw(win, x, y, str.c_str());
+	wrefresh(win);
+}
+
+void curses::Curses::Window::GetCh()
+{
+	flushinp();
+	wgetch(win);
+}
