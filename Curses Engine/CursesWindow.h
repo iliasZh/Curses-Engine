@@ -13,6 +13,30 @@ namespace curses
 {
 	class Curses
 	{
+	private:
+		class Window
+		{
+		public:
+			Window(int startX, int startY, int width, int height)
+				: startX{ startX }
+				, startY{ startY }
+				, width{ width }
+				, height{ height }
+				, win{ newwin(height, width, startY, startX) }
+			{
+				assert(startX > 0 && startY > 0);
+				assert(width > 0 && height > 0);
+			}
+			Window(const Window&) = delete;
+			Window& operator=(const Window&) = delete;
+			~Window();
+			void DrawBox();
+			void Write(int x, int y, std::u8string str);
+			void GetCh();
+		private:
+			int startX, startY, width, height;
+			WINDOW* win = nullptr;
+		};
 	public:
 		enum class CursorMode
 		{
@@ -38,30 +62,6 @@ namespace curses
 			std::wstring filename;
 			int line;
 			mutable std::wstring whatBuffer;
-		};
-
-		class Window
-		{
-		public:
-			Window(int startX, int startY, int width, int height)
-				: startX{ startX }
-				, startY{ startY }
-				, width{ width }
-				, height{ height }
-				, win{ newwin(height, width, startY, startX) }
-			{
-				assert(startX > 0 && startY > 0);
-				assert(width > 0 && height > 0);
-			}
-			Window(const Window&) = delete;
-			Window& operator=(const Window&) = delete;
-			~Window();
-			void DrawBox();
-			void Write(int x, int y, std::string str);
-			void GetCh();
-		private:
-			int startX, startY, width, height;
-			WINDOW* win = nullptr;
 		};
 
 		Curses();

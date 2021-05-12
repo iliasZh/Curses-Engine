@@ -1,4 +1,5 @@
 #include "CursesWindow.h"
+#include "Utilities.h"
 #include <sstream>
 
 const wchar_t* curses::Curses::Exception::what() const noexcept
@@ -102,12 +103,12 @@ void curses::Curses::Window::DrawBox()
 	wrefresh(win);
 }
 
-void curses::Curses::Window::Write(int x, int y, std::string str)
+void curses::Curses::Window::Write(int x, int y, std::u8string str)
 {
 	assert(x >= 0 && x < width);
 	assert(y >= 0 && y < height);
-	assert(str.length() < width - x);
-	mvwprintw(win, x, y, str.c_str());
+	assert(count_codepoints(str) < width - x); // may not work properly, i don't know shit about unicode
+	mvwprintw(win, x, y, reinterpret_cast<const char*>(str.c_str()));
 	wrefresh(win);
 }
 
