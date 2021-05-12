@@ -21,6 +21,16 @@ void curses::Curses::Window::DrawBox()
 	wrefresh(win);
 }
 
+void curses::Curses::Window::Refresh()
+{
+	wrefresh(win);
+}
+
+void curses::Curses::Window::Touch()
+{
+	touchwin(win);
+}
+
 void curses::Curses::Window::Write(int x, int y, std::u8string str)
 {
 	assert(x >= 0 && x < width);

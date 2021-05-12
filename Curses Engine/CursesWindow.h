@@ -31,6 +31,8 @@ namespace curses
 			Window& operator=(const Window&) = delete;
 			~Window();
 			void DrawBox();
+			void Refresh();
+			void Touch();
 			void Write(int x, int y, std::u8string str);
 			void GetCh();
 		private:

@@ -20,6 +20,11 @@ int main()
 		cs["central"].DrawBox();
 		cs["central"].Write(1, 1, u8"YOU DIED!");
 
+		cs["central"].Touch();
+
+
+
+		//cs["central"].Write(1, 1, u8"YOU DIED!");
 		//
 		//cs["offset"].DrawBox();
 		//cs["offset"].Write(1, 1, u8"YOU DIED!");
