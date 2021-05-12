@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <algorithm>
 
 inline std::wstring to_ws(const char* s)
 {
@@ -9,6 +10,13 @@ inline std::wstring to_ws(const char* s)
 	{
 		ws.push_back(wchar_t(*pc));
 	}
+	return ws;
+}
+
+inline std::wstring s_to_ws(std::string s)
+{
+	std::wstring ws(s.length(), L' ');
+	std::copy(s.begin(), s.end(), ws.begin());
 	return ws;
 }
 

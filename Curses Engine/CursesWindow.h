@@ -71,15 +71,25 @@ namespace curses
 		Curses& operator=(const Curses&) = delete;
 		Curses& operator=(Curses&&) = delete;
 		~Curses();
-		void AddWindow(std::wstring name, int startX, int startY, int width, int height);
-		Window& GetWindow(std::wstring name);
+
+		// creates a window in 'windows' unordered map
+		// if a window with specified name already exists, throws an exception
+		void AddWindow(std::string name, int startX, int startY, int width, int height);
+		
+		// get a ref to window
+		// throws an exception if window does not exist
+		Window& operator[](std::string name);
+		
+		// returns true if a window was erased, false otherwise
+		bool DeleteWindow(std::string name);
+
 		void SetCursorMode(CursorMode mode);
 		CursorMode GetCursorMode() { return cursorMode; }
 		void SetEchoMode(bool enable);
 		bool IsEchoEnabled() { return echoEnabled; }
 		bool HasColors() { return has_colors(); }
 	private:
-		std::unordered_map<std::wstring, Window> windows;
+		std::unordered_map<std::string, Window> windows;
 		CursorMode cursorMode = CursorMode::Normal;
 		bool echoEnabled = true;
 		static inline int instances = 0; // instance counter, used to prevent creating multiple instances

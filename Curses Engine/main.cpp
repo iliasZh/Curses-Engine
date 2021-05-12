@@ -12,16 +12,21 @@ int main()
 		cs.SetCursorMode(Curses::CursorMode::Invisible);
 		cs.SetEchoMode(false);
 
-		cs.AddWindow(L"central", (COLS - 11) / 2, (LINES - 3) / 2, 11, 3);
-		cs.AddWindow(L"offset", (COLS - 11) / 2 - 15, (LINES - 3) / 2 + 10, 11, 3);
+		cs.AddWindow("central", (COLS - 11) / 2, (LINES - 3) / 2, 11, 3);
+		cs.AddWindow("offset", (COLS - 11) / 2 - 15, (LINES - 3) / 2 + 10, 11, 3);
 
-		cs.GetWindow(L"central").DrawBox();
-		cs.GetWindow(L"central").Write(1, 1, u8"YOU DIED!");
-		cs.GetWindow(L"central").GetCh();
-		
-		//cs.GetWindow(L"central").GetCh();
-		//cs.GetWindow(L"offset").DrawBox();
-		//cs.GetWindow(L"offset").Write(1, 1, u8"YOU DIED!");
+
+
+		cs["central"].DrawBox();
+		cs["central"].Write(1, 1, u8"YOU DIED!");
+
+		//
+		//cs["offset"].DrawBox();
+		//cs["offset"].Write(1, 1, u8"YOU DIED!");
+		cs["central"].GetCh();
+		//
+		//cs.DeleteWindow("central");
+		//cs["offset"].GetCh();
 	}
 	catch (const Curses::Exception& e)
 	{
