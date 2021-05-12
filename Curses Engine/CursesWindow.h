@@ -38,13 +38,6 @@ namespace curses
 			WINDOW* win = nullptr;
 		};
 	public:
-		enum class CursorMode
-		{
-			// for curs_set(int) function
-			Invisible,
-			Normal,
-			Full
-		};
 		class Exception
 		{
 		public:
@@ -63,22 +56,33 @@ namespace curses
 			int line;
 			mutable std::wstring whatBuffer;
 		};
-
+	public:
+		enum class CursorMode
+		{
+			// for curs_set(int) function
+			Invisible,
+			Normal,
+			Full
+		};
+	public:
 		Curses();
 		Curses(const Curses&) = delete;
+		Curses(Curses&&) = delete;
 		Curses& operator=(const Curses&) = delete;
+		Curses& operator=(Curses&&) = delete;
 		~Curses();
 		void AddWindow(std::wstring name, int startX, int startY, int width, int height);
 		Window& GetWindow(std::wstring name);
 		void SetCursorMode(CursorMode mode);
 		CursorMode GetCursorMode() { return cursorMode; }
 		void SetEchoMode(bool enable);
-		bool IsEchoEnabled() const { return echoEnabled; }
-		bool HasColors() const { return has_colors(); }
+		bool IsEchoEnabled() { return echoEnabled; }
+		bool HasColors() { return has_colors(); }
 	private:
 		std::unordered_map<std::wstring, Window> windows;
 		CursorMode cursorMode = CursorMode::Normal;
 		bool echoEnabled = true;
+		static inline int instances = 0; // instance counter, used to prevent creating multiple instances
 	};
 
 }

@@ -16,13 +16,14 @@ int main()
 		cs.AddWindow(L"offset", (COLS - 11) / 2 - 15, (LINES - 3) / 2 + 10, 11, 3);
 
 		cs.GetWindow(L"central").DrawBox();
-		cs.GetWindow(L"central").Write(1, 1, u8"рш слеп!");
-
-		cs.GetWindow(L"offset").DrawBox();
-		cs.GetWindow(L"offset").Write(1, 1, u8"YOU DIED!");
+		cs.GetWindow(L"central").Write(1, 1, u8"YOU DIED!");
 		cs.GetWindow(L"central").GetCh();
+		
+		//cs.GetWindow(L"central").GetCh();
+		//cs.GetWindow(L"offset").DrawBox();
+		//cs.GetWindow(L"offset").Write(1, 1, u8"YOU DIED!");
 	}
-	catch (const curses::Curses::Exception& e)
+	catch (const Curses::Exception& e)
 	{
 		//wchar_t consoleTitle[100];
 		//GetConsoleTitle(consoleTitle, 100);

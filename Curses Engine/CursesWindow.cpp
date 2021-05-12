@@ -15,13 +15,21 @@ const wchar_t* curses::Curses::Exception::what() const noexcept
 
 curses::Curses::Curses()
 {
-	initscr();
-	SetEchoMode(echoEnabled);
-	SetCursorMode(cursorMode);
+	if (++instances == 1)
+	{
+		initscr();
+		SetEchoMode(echoEnabled);
+		SetCursorMode(cursorMode);
+	}
+	else
+	{
+		THROW_CURSES_EXCEPTION(L"Curses constructor", L"Attempting to create more than one instance of Curses");
+	}
 }
 
 curses::Curses::~Curses()
 {
+	--instances;
 	endwin();
 }
 
