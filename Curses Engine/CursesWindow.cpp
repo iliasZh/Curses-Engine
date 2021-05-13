@@ -51,11 +51,20 @@ void curses::Curses::Window::Write(int x, int y, std::u8string str, Color fg, Co
 	assert(y >= 0 && y < height);
 	assert(count_codepoints(str) < width - x); // may not work properly, i don't know shit about unicode
 
+	const bool isDefault = (fg == Color::White) && (bg == Color::Black);
 	chtype colorPair = GetColorPair(fg, bg);
 
-	wattron(win, colorPair);
-	mvwprintw(win, y, x, reinterpret_cast<const char*>(str.c_str()));
-	wattroff(win, colorPair);
+	if (isDefault)
+	{
+		mvwprintw(win, y, x, reinterpret_cast<const char*>(str.c_str()));
+	}
+	else
+	{
+		wattron(win, colorPair);
+		mvwprintw(win, y, x, reinterpret_cast<const char*>(str.c_str()));
+		wattroff(win, colorPair);
+	}
+
 	wrefresh(win);
 }
 
