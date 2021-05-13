@@ -5,19 +5,33 @@
 curses::Curses::Window::~Window()
 {
 	// clear box and contents
-	std::string fill(width, ' ');
-	for (int i = 0; i < height; ++i)
-	{
-		mvwprintw(win, i, 0, fill.c_str()); // win, y, x, str
-	}
-	wrefresh(win);
+	//std::string fill(width, ' ');
+	//for (int i = 0; i < height; ++i)
+	//{
+	//	mvwprintw(win, i, 0, fill.c_str()); // win, y, x, str
+	//}
+	//wrefresh(win);
 	//wborder(win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+	Clear();
 	delwin(win);
 }
 
-void curses::Curses::Window::DrawBox()
+void curses::Curses::Window::DrawBox(Color fg, Color bg)
 {
-	box(win, 0, 0);
+	const bool isDefault = (fg == Color::White) && (bg == Color::Black);
+	chtype colorPair = GetColorPair(fg, bg);
+	
+	if (isDefault)
+	{
+		box(win, 0, 0);
+	}
+	else
+	{
+		wattron(win, colorPair);
+		box(win, 0, 0);
+		wattroff(win, colorPair);
+	}
+
 	wrefresh(win);
 }
 
@@ -31,12 +45,17 @@ void curses::Curses::Window::Touch()
 	touchwin(win);
 }
 
-void curses::Curses::Window::Write(int x, int y, std::u8string str)
+void curses::Curses::Window::Write(int x, int y, std::u8string str, Color fg, Color bg)
 {
 	assert(x >= 0 && x < width);
 	assert(y >= 0 && y < height);
 	assert(count_codepoints(str) < width - x); // may not work properly, i don't know shit about unicode
-	mvwprintw(win, x, y, reinterpret_cast<const char*>(str.c_str()));
+
+	chtype colorPair = GetColorPair(fg, bg);
+
+	wattron(win, colorPair);
+	mvwprintw(win, y, x, reinterpret_cast<const char*>(str.c_str()));
+	wattroff(win, colorPair);
 	wrefresh(win);
 }
 
@@ -44,6 +63,21 @@ void curses::Curses::Window::GetCh()
 {
 	flushinp();
 	wgetch(win);
+}
+
+void curses::Curses::Window::Clear()
+{
+	wclear(win);
+}
+
+int curses::Curses::Window::GetCursorX()
+{
+	return getcurx(win);
+}
+
+int curses::Curses::Window::GetCursorY()
+{
+	return getcury(win);
 }
 
 const wchar_t* curses::Curses::Exception::what() const noexcept
@@ -64,6 +98,21 @@ curses::Curses::Curses()
 		initscr();
 		SetEchoMode(echoEnabled);
 		SetCursorMode(cursorMode);
+		if (HasColors())
+		{
+			start_color();
+			for (int i = 0; i < numOfColors; ++i) // foreground
+			{
+				for (int j = 0; j < numOfColors; ++j) // background
+				{
+					init_pair(i * numOfColors + j, i, j);
+				}
+			}
+		}
+		else
+		{
+			THROW_CURSES_EXCEPTION(L"Curses constructor", L"your terminal does not support colors");
+		}
 	}
 	else
 	{
@@ -108,7 +157,7 @@ void curses::Curses::AddWindow(std::string name, int startX, int startY, int wid
 	{
 		std::wstringstream wss;
 		wss << L"element \"" << s_to_ws(name) << L"\" already exists.\n"
-			<< L"Use operator[ ] to get a reference.";
+			<< L"Use operator[ ] to get a reference";
 		THROW_CURSES_EXCEPTION(L"Curses::AddWindow()", wss.str());
 	}
 
@@ -121,7 +170,7 @@ curses::Curses::Window& curses::Curses::operator[](std::string name)
     if (it == windows.end())
     {
         std::wstringstream wss;
-        wss << L'\"' << s_to_ws(name) << L'\"' << L" window does not exist.";
+        wss << L'\"' << s_to_ws(name) << L'\"' << L" window does not exist";
         THROW_CURSES_EXCEPTION(L"Curses::operator[ ]", wss.str());
     }
     else
@@ -149,4 +198,9 @@ void curses::Curses::SetEchoMode(bool enable)
 		noecho();
 
 	echoEnabled = enable;
+}
+
+chtype curses::Curses::GetColorPair(Color f, Color b)
+{
+	return COLOR_PAIR((int)f * numOfColors + (int)b);
 }

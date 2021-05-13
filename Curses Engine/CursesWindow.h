@@ -13,10 +13,30 @@ namespace curses
 {
 	class Curses
 	{
+	public:
+		enum class CursorMode
+		{
+			// for curs_set(int) function
+			Invisible,
+			Normal,
+			Full
+		};
+		enum class Color
+		{
+			Black = COLOR_BLACK,
+			Red = COLOR_RED,
+			Green = COLOR_GREEN,
+			Blue = COLOR_BLUE,
+			Yellow = COLOR_YELLOW,
+			Cyan = COLOR_CYAN,
+			Magenta = COLOR_MAGENTA,
+			White = COLOR_WHITE
+		};
 	private:
 		class Window
 		{
 		public:
+			//typedef typename Curses::Color Color;
 			Window(int startX, int startY, int width, int height)
 				: startX{ startX }
 				, startY{ startY }
@@ -30,11 +50,14 @@ namespace curses
 			Window(const Window&) = delete;
 			Window& operator=(const Window&) = delete;
 			~Window();
-			void DrawBox();
+			void DrawBox(Color fg = Color::White, Color bg = Color::Black);
 			void Refresh();
 			void Touch();
-			void Write(int x, int y, std::u8string str);
+			void Write(int x, int y, std::u8string str, Color c = Color::White, Color bg = Color::Black);
 			void GetCh();
+			void Clear();
+			int GetCursorX();
+			int GetCursorY();
 		private:
 			int startX, startY, width, height;
 			WINDOW* win = nullptr;
@@ -44,7 +67,7 @@ namespace curses
 		{
 		public:
 			Exception(std::wstring funcname, std::wstring errorDesc,
-							std::wstring filename, int line) noexcept
+						std::wstring filename, int line) noexcept
 				: funcname{ funcname }
 				, errorDesc{ errorDesc }
 				, filename{ filename }
@@ -57,14 +80,6 @@ namespace curses
 			std::wstring filename;
 			int line;
 			mutable std::wstring whatBuffer;
-		};
-	public:
-		enum class CursorMode
-		{
-			// for curs_set(int) function
-			Invisible,
-			Normal,
-			Full
 		};
 	public:
 		Curses();
@@ -91,10 +106,13 @@ namespace curses
 		bool IsEchoEnabled() { return echoEnabled; }
 		bool HasColors() { return has_colors(); }
 	private:
+		static chtype GetColorPair(Color f, Color b);
+	private:
 		std::unordered_map<std::string, Window> windows;
 		CursorMode cursorMode = CursorMode::Normal;
 		bool echoEnabled = true;
 		static inline int instances = 0; // instance counter, used to prevent creating multiple instances
+		static constexpr int numOfColors = 8;
 	};
 
 }
