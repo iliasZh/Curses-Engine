@@ -52,3 +52,10 @@
 #define WIDE2(x) L##x
 #define WIDE1(x) WIDE2(x)
 #define WFILE WIDE1(__FILE__)
+
+#include "ExceptionBase.h"
+#include "Utilities.h"
+inline void ShowErrorWindow(const ExceptionBase& e)
+{
+	MessageBox(NULL, to_ws(e.what()).c_str(), to_ws(e.ErrorType()).c_str(), MB_OK | MB_ICONERROR);
+}

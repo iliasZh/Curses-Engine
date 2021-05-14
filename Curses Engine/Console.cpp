@@ -9,7 +9,7 @@ Console::Console(unsigned widthConPx, unsigned heightConPx, unsigned fontWidthPx
 	, title{ title }
 {
 	// title setup
-
+	 
 	// sanity check
 	assert(float(widthConPx) / float(heightConPx) <= maxAspectRatio);
 	assert(heightConPx * fontWidthPx * 2 <= maxHeightPx);
@@ -20,7 +20,7 @@ Console::Console(unsigned widthConPx, unsigned heightConPx, unsigned fontWidthPx
 	
 	if ((hConsole = FindWindow(NULL, setup.c_str())) == NULL)
 	{
-		throw std::exception("Failed to get the console handle :("); // fix except later
+		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
 	}
 
 	SetConsoleTitle(title.c_str()); // set requested title
@@ -77,7 +77,8 @@ Console::Console(unsigned widthConPx, unsigned heightConPx, unsigned fontWidthPx
 	wcscpy_s(cfi.FaceName, L"Consolas");
 	if (SetCurrentConsoleFontEx(consoleHandle, FALSE, &cfi) == NULL)
 	{
-		throw std::exception("Error: failed to set font");	// fix except later
+		THROW_CONSOLE_EXCEPTION("Console contrustor, SetCurrentConsoleFontEx()",
+								"failed to set the font size");
 	}
 	Sleep(40);	// wait a bit for changes to apply...
 	// font setup END

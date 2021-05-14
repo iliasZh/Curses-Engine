@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="Console.h" />
     <ClInclude Include="CursesWindow.h" />
+    <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="IliasWin.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>

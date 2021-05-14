@@ -11,7 +11,7 @@ int main()
 {
 	try
 	{
-		Console cnsl{10u, 30u, 15u};
+		Console cnsl{60u, 30u, 15u};
 
 		Curses cs;
 		cs.SetCursorMode(Curses::CursorMode::Invisible);
@@ -46,6 +46,10 @@ int main()
 		//wchar_t consoleTitle[100];
 		//GetConsoleTitle(consoleTitle, 100);
 		MessageBox(NULL, e.what(), L"Curses exception!", MB_OK | MB_ICONERROR);
+	}
+	catch (const Console::Exception& e)
+	{
+		ShowErrorWindow(e);
 	}
 	catch (const std::exception& e)
 	{
