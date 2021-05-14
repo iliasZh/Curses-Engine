@@ -1,10 +1,8 @@
 #include "Console.h"
 #include <cassert>
 
-Console::Console(unsigned widthConPx, unsigned heightConPx, unsigned fontWidthPx, std::wstring title)
+Console::Console(unsigned fontWidthPx, std::wstring title)
 	: consoleHandle{ GetStdHandle(STD_OUTPUT_HANDLE) }
-	, widthConPx{ widthConPx }
-	, heightConPx{ heightConPx }
 	, fontWidthPx{ fontWidthPx }
 	, title{ title }
 {

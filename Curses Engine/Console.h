@@ -5,7 +5,7 @@
 class Console
 {
 public:
-	Console(unsigned widthConPx = 120, unsigned heightConPx = 30, unsigned fontWidthPx = 15, std::wstring title = L"Curses Engine");
+	Console(unsigned fontWidthPx = 15, std::wstring title = L"Curses Engine");
 	Console(const Console&) = delete;
 	Console(Console&&) = delete;
 	Console& operator=(const Console&) = delete;
@@ -22,12 +22,13 @@ public:
 			errorType = "Console error";
 		}
 	};
+public:
+	static constexpr unsigned widthConPx = 60u;
+	static constexpr unsigned heightConPx = 30u;
 private:
 	HWND hConsole;
 	HANDLE consoleHandle;
 	std::wstring title;
-	unsigned widthConPx;
-	unsigned heightConPx;
 	unsigned fontWidthPx;
 	unsigned screenWidthPx = 1920;
 	unsigned screenHeightPx = 1080;
