@@ -5,22 +5,21 @@
 class Console
 {
 public:
-	Console(int widthConPx = 120, int heightConPx = 30, int fontWidthPx = 15, std::wstring title = L"Curses Engine");
-	~Console();
-private:
-	struct Config
-	{
-		std::wstring title{ 50, L' ' };
-		LONG style = 0;
-		CONSOLE_SCREEN_BUFFER_INFO screenBufInfo{};
-		CONSOLE_FONT_INFOEX fontInfo{};
-	};
+	Console(unsigned widthConPx = 120, unsigned heightConPx = 30, unsigned fontWidthPx = 15, std::wstring title = L"Curses Engine");
+	Console(const Console&) = delete;
+	Console(Console&&) = delete;
+	Console& operator=(const Console&) = delete;
+	Console& operator=(Console&&) = delete;
+	~Console() {}
 private:
 	HWND hConsole;
 	HANDLE consoleHandle;
 	std::wstring title;
-	int widthConPx;
-	int heightConPx;
-	int fontWidthPx;
-	Config old;
+	unsigned widthConPx;
+	unsigned heightConPx;
+	unsigned fontWidthPx;
+	unsigned screenWidthPx = 1920;
+	unsigned screenHeightPx = 1080;
+	float maxAspectRatio = 2.0f;
+	unsigned maxHeightPx = 1000;
 };

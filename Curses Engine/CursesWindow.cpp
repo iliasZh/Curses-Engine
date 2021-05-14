@@ -92,10 +92,10 @@ int curses::Curses::Window::GetCursorY()
 const wchar_t* curses::Curses::Exception::what() const noexcept
 {
     std::wstringstream wss;
-    wss << "Error in " << funcname << ": "
+    wss << L"Error in " << funcname << ": "
         << errorDesc << std::endl << std::endl
-        << "File: " << filename << std::endl
-        << "Line: " << line << std::endl;
+        << L"File: " << filename << std::endl
+        << L"Line: " << line << std::endl;
     whatBuffer = wss.str();
     return whatBuffer.c_str();
 }

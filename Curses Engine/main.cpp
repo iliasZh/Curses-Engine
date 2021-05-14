@@ -11,7 +11,7 @@ int main()
 {
 	try
 	{
-		Console cnsl{};
+		Console cnsl{10u, 30u, 15u};
 
 		Curses cs;
 		cs.SetCursorMode(Curses::CursorMode::Invisible);
