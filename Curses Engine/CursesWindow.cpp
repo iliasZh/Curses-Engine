@@ -89,17 +89,6 @@ int curses::Curses::Window::GetCursorY()
 	return getcury(win);
 }
 
-const wchar_t* curses::Curses::Exception::what() const noexcept
-{
-    std::wstringstream wss;
-    wss << L"Error in " << funcname << ": "
-        << errorDesc << std::endl << std::endl
-        << L"File: " << filename << std::endl
-        << L"Line: " << line << std::endl;
-    whatBuffer = wss.str();
-    return whatBuffer.c_str();
-}
-
 curses::Curses::Curses()
 {
 	if (++instances == 1)
@@ -120,12 +109,12 @@ curses::Curses::Curses()
 		}
 		else
 		{
-			THROW_CURSES_EXCEPTION(L"Curses constructor", L"your terminal does not support colors");
+			THROW_CURSES_EXCEPTION("Curses constructor", "your terminal does not support colors");
 		}
 	}
 	else
 	{
-		THROW_CURSES_EXCEPTION(L"Curses constructor", L"attempting to create more than one instance of Curses");
+		THROW_CURSES_EXCEPTION("Curses constructor", "attempting to create more than one instance of Curses");
 	}
 }
 
@@ -164,10 +153,10 @@ void curses::Curses::AddWindow(std::string name, int startX, int startY, int wid
 
 	if (!(res.second)) // element already exists
 	{
-		std::wstringstream wss;
-		wss << L"element \"" << s_to_ws(name) << L"\" already exists.\n"
-			<< L"Use operator[ ] to get a reference";
-		THROW_CURSES_EXCEPTION(L"Curses::AddWindow()", wss.str());
+		std::stringstream ss;
+		ss << "element \"" << name << "\" already exists.\n"
+			<< "Use operator[ ] to get a reference";
+		THROW_CURSES_EXCEPTION("Curses::AddWindow()", ss.str());
 	}
 
 	return;
@@ -178,9 +167,9 @@ curses::Curses::Window& curses::Curses::operator[](std::string name)
     auto it = windows.find(name);	// returns windows.end() if not found
     if (it == windows.end())
     {
-        std::wstringstream wss;
-        wss << L'\"' << s_to_ws(name) << L'\"' << L" window does not exist";
-        THROW_CURSES_EXCEPTION(L"Curses::operator[ ]", wss.str());
+        std::stringstream ss;
+        ss << '\"' << name << '\"' << " window does not exist";
+        THROW_CURSES_EXCEPTION("Curses::operator[ ]", ss.str());
     }
     else
     {

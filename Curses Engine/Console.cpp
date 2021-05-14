@@ -9,7 +9,7 @@ Console::Console(unsigned widthConPx, unsigned heightConPx, unsigned fontWidthPx
 	, title{ title }
 {
 	// title setup
-	 
+	
 	// sanity check
 	assert(float(widthConPx) / float(heightConPx) <= maxAspectRatio);
 	assert(heightConPx * fontWidthPx * 2 <= maxHeightPx);

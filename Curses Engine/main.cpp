@@ -41,20 +41,12 @@ int main()
 		//cs.DeleteWindow("central");
 		//cs["offset"].GetCh();
 	}
-	catch (const Curses::Exception& e)
-	{
-		//wchar_t consoleTitle[100];
-		//GetConsoleTitle(consoleTitle, 100);
-		MessageBox(NULL, e.what(), L"Curses exception!", MB_OK | MB_ICONERROR);
-	}
-	catch (const Console::Exception& e)
+	catch (const ExceptionBase& e)
 	{
 		ShowErrorWindow(e);
 	}
 	catch (const std::exception& e)
 	{
-		//wchar_t consoleTitle[100];
-		//GetConsoleTitle(consoleTitle, 100);
 		MessageBox(NULL, to_ws(e.what()).c_str(), L"Standard C++ exception!", MB_OK | MB_ICONERROR);
 	}
 

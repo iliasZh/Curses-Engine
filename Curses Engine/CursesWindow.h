@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IliasWin.h"
+#include "ExceptionBase.h"
 
 #undef MOUSE_MOVED
 
@@ -63,23 +64,15 @@ namespace curses
 			WINDOW* win = nullptr;
 		};
 	public:
-		class Exception
+		class Exception : public ExceptionBase
 		{
 		public:
-			Exception(std::wstring funcname, std::wstring errorDesc,
-						std::wstring filename, int line) noexcept
-				: funcname{ funcname }
-				, errorDesc{ errorDesc }
-				, filename{ filename }
-				, line{ line }
-			{}
-			const wchar_t* what() const noexcept;
-		private:
-			std::wstring funcname;
-			std::wstring errorDesc;
-			std::wstring filename;
-			int line;
-			mutable std::wstring whatBuffer;
+			Exception(std::string funcname, std::string errorDesc,
+						std::string filename, int line) noexcept
+				: ExceptionBase{ funcname, errorDesc, filename, line }
+			{
+				errorType = "Curses error";
+			}
 		};
 	public:
 		Curses();
@@ -117,4 +110,4 @@ namespace curses
 
 }
 
-#define THROW_CURSES_EXCEPTION(func, errorDesc) throw Curses::Exception{ (func), errorDesc, WFILE, __LINE__ }
+#define THROW_CURSES_EXCEPTION(func, errorDesc) throw Curses::Exception{ (func), errorDesc, __FILE__, __LINE__ }
