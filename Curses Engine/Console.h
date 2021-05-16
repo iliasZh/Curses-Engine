@@ -22,6 +22,11 @@ public:
 			errorType = "Console error";
 		}
 	};
+public:
+	static constexpr unsigned widthConPx = 60u;
+	static constexpr unsigned heightConPx = 30u;
+	static constexpr unsigned width = widthConPx * 2u;
+	static constexpr unsigned height = heightConPx;
 private:
 	HWND hConsole;
 	HANDLE consoleHandle;
@@ -31,11 +36,8 @@ private:
 	unsigned screenHeightPx = 1080u;
 	unsigned maxHeightPx = 1000u;
 	static constexpr unsigned maxAspectRatio = 2u;
-public:
-	static constexpr unsigned widthConPx = 60u;
-	static constexpr unsigned heightConPx = 30u;
-	static constexpr unsigned width = widthConPx * 2u;
-	static constexpr unsigned height = heightConPx;
+private:
+	inline static int instances = 0;
 };
 
 #define THROW_CONSOLE_EXCEPTION(func, errorDesc) throw Console::Exception{(func), (errorDesc), __FILE__, __LINE__}

@@ -89,30 +89,25 @@ int curses::Curses::Window::GetCursorY()
 
 curses::Curses::Curses()
 {
-	if (++instances == 1)
+	assert(++instances == 1);
+
+	initscr();
+	SetEchoMode(echoEnabled);
+	SetCursorMode(cursorMode);
+	if (HasColors())
 	{
-		initscr();
-		SetEchoMode(echoEnabled);
-		SetCursorMode(cursorMode);
-		if (HasColors())
+		start_color();
+		for (int i = 0; i < numOfColors; ++i) // foreground
 		{
-			start_color();
-			for (int i = 0; i < numOfColors; ++i) // foreground
+			for (int j = 0; j < numOfColors; ++j) // background
 			{
-				for (int j = 0; j < numOfColors; ++j) // background
-				{
-					init_pair(i * numOfColors + j, i, j);
-				}
+				init_pair(i * numOfColors + j, i, j);
 			}
-		}
-		else
-		{
-			THROW_CURSES_EXCEPTION("Curses constructor", "your terminal does not support colors");
 		}
 	}
 	else
 	{
-		THROW_CURSES_EXCEPTION("Curses constructor", "attempting to create more than one instance of Curses");
+		THROW_CURSES_EXCEPTION("Curses constructor", "your terminal does not support colors");
 	}
 }
 

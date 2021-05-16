@@ -20,6 +20,10 @@ public:
 	};
 public:
 	Game(unsigned fontWidthPx = 15u, std::wstring title = L"Curses Engine");
+	Game(const Game&)				= delete;
+	Game(Game&&)					= delete;
+	Game& operator=(const Game&)	= delete;
+	Game& operator=(Game&&)			= delete;
 	Message Go();
 	void Update();
 	void BeginFrame();
@@ -37,4 +41,6 @@ private:
 	Direction dir = Direction::Up;
 	float time = 0.0f;
 	bool posUpdated = false;
+private:
+	inline static int instances = 0;
 };

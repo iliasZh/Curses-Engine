@@ -4,6 +4,8 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	: console{ fontWidthPx, title }	// console setup, then
 	, cs {}							// curses initialization
 {
+	assert(++instances == 1);
+
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
 	cs.AddWindow("main", 0, 0, Console::width, Console::height);

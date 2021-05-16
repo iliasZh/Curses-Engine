@@ -104,7 +104,8 @@ namespace curses
 		std::unordered_map<std::string, Window> windows;
 		CursorMode cursorMode = CursorMode::Normal;
 		bool echoEnabled = true;
-		static inline int instances = 0; // instance counter, used to prevent creating multiple instances
+		inline static int instances = 0; // instance counter, used to prevent creating multiple instances
+	private:
 		static constexpr int numOfColors = 8;
 	};
 
