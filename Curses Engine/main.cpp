@@ -10,7 +10,7 @@ int main()
 {
 	try
 	{
-		Game game{ 15u };
+		Game game{ 12u };
 
 		while (true)
 		{

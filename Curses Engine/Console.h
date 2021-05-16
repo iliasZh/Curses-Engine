@@ -34,6 +34,8 @@ private:
 public:
 	static constexpr unsigned widthConPx = 60u;
 	static constexpr unsigned heightConPx = 30u;
+	static constexpr unsigned width = widthConPx * 2u;
+	static constexpr unsigned height = heightConPx;
 };
 
 #define THROW_CONSOLE_EXCEPTION(func, errorDesc) throw Console::Exception{(func), (errorDesc), __FILE__, __LINE__}

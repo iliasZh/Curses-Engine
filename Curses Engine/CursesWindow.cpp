@@ -65,7 +65,7 @@ void curses::Curses::Window::Write(int x, int y, std::u8string str, Color fg, Co
 		wattroff(win, colorPair);
 	}
 
-	wrefresh(win);
+	//wrefresh(win);
 }
 
 void curses::Curses::Window::GetCh()

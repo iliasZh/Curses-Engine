@@ -45,7 +45,7 @@ namespace curses
 				, height{ height }
 				, win{ newwin(height, width, startY, startX) }
 			{
-				assert(startX > 0 && startY > 0);
+				assert(startX >= 0 && startY >= 0);
 				assert(width > 0 && height > 0);
 			}
 			Window(const Window&) = delete;
