@@ -2,7 +2,8 @@
 
 Game::Game(unsigned fontWidthPx, std::wstring title)
 	: console{ fontWidthPx, title }	// console setup, then
-	, cs {}							// curses initialization
+	, cs{  }						// curses initialization
+	, vp{ 1, 1, 30 - 2, 30 - 2 }
 {
 	assert(++instances == 1);
 
@@ -23,7 +24,6 @@ Game::Message Game::Go()
 	{
 		return Message::Ok;
 	}
-
 }
 
 void Game::Update()
@@ -47,23 +47,23 @@ void Game::Update()
 		dir = Direction::Right;
 	}
 
-	if (time > 0.15f)
+	if (time > 0.05f)
 	{
-		time -= 0.15f;
+		time -= 0.05f;
 
 		switch (dir)
 		{
 		case Direction::Up:
-			y = std::max(y - 1, minY);
+			y = std::max(y - 1, 0);
 			break;
 		case Direction::Down:
-			y = std::min(y + 1, maxY);
+			y = std::min(y + 1, vp.HeightConPx() - 1);
 			break;
 		case Direction::Left:
-			x = std::max(x - 1, minX);
+			x = std::max(x - 1, 0);
 			break;
 		case Direction::Right:
-			x = std::min(x + 1, maxX);
+			x = std::min(x + 1, vp.WidthConPx() - 1);
 			break;
 		}
 
@@ -76,7 +76,7 @@ void Game::BeginFrame()
 {
 	if (posUpdated)
 	{
-		
+		vp.Clear();
 	}
 }
 
@@ -84,7 +84,8 @@ void Game::DrawFrame()
 {
 	if (posUpdated)
 	{
-		
+		vp.PutConPixel(x, y, Color::Green);
+		vp.Refresh();
 		posUpdated = false;
 	}
 }

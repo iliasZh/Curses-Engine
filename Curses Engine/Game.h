@@ -3,6 +3,7 @@
 #include "CursesWindow.h"
 #include "Console.h"
 #include "Timer.h"
+#include "Viewport.h"
 
 class Game
 {
@@ -36,10 +37,8 @@ private:
 private:
 	//----------------USER-DEFINED-VARIABLES----------------
 	Timer timer{};
-	int x = 1, y = 1;
-	const int minX = 1, minY = 1;
-	const int maxX = Console::widthConPx - 2;
-	const int maxY = Console::heightConPx - 2;
+	Viewport vp;
+	int x = 0, y = 0;
 	Direction dir = Direction::Up;
 	float time = 0.0f;
 	bool posUpdated = false;

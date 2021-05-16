@@ -47,8 +47,10 @@ namespace curses
 			void Write(int x, int y, std::u8string str, Color fg = Color::White, Color bg = Color::Black);
 			void GetCh();
 			void Clear();
-			int GetCursorX();
-			int GetCursorY();
+			int GetStartX() const;
+			int GetStartY() const;
+			int Width() const { return width; }
+			int Height() const { return height; }
 		protected:
 			int startX, startY, width, height;
 			WINDOW* win = nullptr;

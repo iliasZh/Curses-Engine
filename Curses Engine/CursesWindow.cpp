@@ -36,7 +36,7 @@ void curses::Curses::Window::DrawBox(Color fg, Color bg)
 		wattroff(win, colorPair);
 	}
 
-	wrefresh(win);
+	//wrefresh(win);
 }
 
 void curses::Curses::Window::Refresh()
@@ -53,7 +53,7 @@ void curses::Curses::Window::Write(int x, int y, std::u8string str, Color fg, Co
 {
 	assert(x >= 0 && x < width);
 	assert(y >= 0 && y < height);
-	assert(count_codepoints(str) < width - x); // may not work properly, i don't know shit about unicode
+	assert(count_codepoints(str) < width - x + 1); // may not work properly, i don't know shit about unicode
 
 	const bool isDefault = (fg == Color::White) && (bg == Color::Black);
 	chtype colorPair = GetColorPair(fg, bg);
@@ -81,14 +81,14 @@ void curses::Curses::Window::Clear()
 	wclear(win);
 }
 
-int curses::Curses::Window::GetCursorX()
+int curses::Curses::Window::GetStartX() const
 {
-	return getcurx(win);
+	return startX;
 }
 
-int curses::Curses::Window::GetCursorY()
+int curses::Curses::Window::GetStartY() const
 {
-	return getcury(win);
+	return startY;
 }
 
 curses::Curses::Curses()
