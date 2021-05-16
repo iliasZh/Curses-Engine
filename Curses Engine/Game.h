@@ -32,15 +32,16 @@ private:
 	Console console;
 	Curses cs;
 private:
+	inline static int instances = 0;
+private:
+	//----------------USER-DEFINED-VARIABLES----------------
 	Timer timer{};
 	int x = 1, y = 1;
-	const int minX = 1;
-	const int minY = 1;
+	const int minX = 1, minY = 1;
 	const int maxX = Console::widthConPx - 2;
 	const int maxY = Console::heightConPx - 2;
 	Direction dir = Direction::Up;
 	float time = 0.0f;
 	bool posUpdated = false;
-private:
-	inline static int instances = 0;
+	//----------------USER-DEFINED-VARIABLES----------------
 };

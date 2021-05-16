@@ -8,9 +8,6 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
-	cs.AddWindow("main", 0, 0, Console::width, Console::height);
-	cs["main"].DrawBox(Color::Green);
-	//cs["msg"].Write(1, 1, u8"Press ESC to quit", Curses::Color::Green);
 }
 
 Game::Message Game::Go()
@@ -79,8 +76,7 @@ void Game::BeginFrame()
 {
 	if (posUpdated)
 	{
-		cs["main"].Clear();
-		cs["main"].DrawBox(Color::Green);
+		
 	}
 }
 
@@ -88,8 +84,7 @@ void Game::DrawFrame()
 {
 	if (posUpdated)
 	{
-		cs["main"].Write(x * 2, y, u8"  ", Color::White, Color::Green);
-		cs["main"].Refresh();
+		
 		posUpdated = false;
 	}
 }

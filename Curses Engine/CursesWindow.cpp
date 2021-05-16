@@ -2,16 +2,20 @@
 #include "Utilities.h"
 #include <sstream>
 
+curses::Curses::Window::Window(int startX, int startY, int width, int height)
+	: startX{ startX }
+	, startY{ startY }
+	, width{ width }
+	, height{ height }
+	, win{ newwin(height, width, startY, startX) }
+{
+	assert(Curses::IsInitialized());
+	assert(startX >= 0 && startY >= 0);
+	assert(width > 0 && height > 0);
+}
+
 curses::Curses::Window::~Window()
 {
-	// clear box and contents
-	//std::string fill(width, ' ');
-	//for (int i = 0; i < height; ++i)
-	//{
-	//	mvwprintw(win, i, 0, fill.c_str()); // win, y, x, str
-	//}
-	//wrefresh(win);
-	//wborder(win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	Clear();
 	delwin(win);
 }
@@ -115,64 +119,6 @@ curses::Curses::~Curses()
 {
 	--instances;
 	endwin();
-}
-
-void curses::Curses::AddWindow(std::string name, int startX, int startY, int width, int height)
-{
-	// the only method to construct in-place that seems to be working
-
-	/*
-	A container's emplace member constructs an element using the supplied arguments.
-
-	The value_type of your map is std::pair<const int, Foo> and that type has no constructor
-	taking the arguments{ 5, 5, 'a', 'b' } i.e. this wouldn't work:
-
-	std::pair<const int, Foo> value{ 5, 5, 'a', 'b' };
-	map.emplace(value);
-
-	You need to call emplace with arguments that match one of pair's constructors.
-
-	With a conforming C++11 implementation you can use :
-
-	mymap.emplace(std::piecewise_construct, std::make_tuple(5), std::make_tuple(5, 'a', 'b'));
-	*/
-
-	auto res = windows.emplace
-	(
-		std::piecewise_construct,
-		std::make_tuple(name),
-		std::make_tuple(startX, startY, width, height)
-	);
-
-	if (!(res.second)) // element already exists
-	{
-		std::stringstream ss;
-		ss << "element \"" << name << "\" already exists.\n"
-			<< "Use operator[ ] to get a reference";
-		THROW_CURSES_EXCEPTION("Curses::AddWindow()", ss.str());
-	}
-
-	return;
-}
-
-curses::Curses::Window& curses::Curses::operator[](std::string name)
-{
-    auto it = windows.find(name);	// returns windows.end() if not found
-    if (it == windows.end())
-    {
-        std::stringstream ss;
-        ss << '\"' << name << '\"' << " window does not exist";
-        THROW_CURSES_EXCEPTION("Curses::operator[ ]", ss.str());
-    }
-    else
-    {
-        return it->second;
-    }
-}
-
-bool curses::Curses::DeleteWindow(std::string name)
-{
-	return (windows.erase(name) == 1);
 }
 
 void curses::Curses::SetCursorMode(CursorMode mode)

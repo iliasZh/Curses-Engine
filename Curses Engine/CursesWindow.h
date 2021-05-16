@@ -33,21 +33,11 @@ namespace curses
 			Magenta = COLOR_MAGENTA,
 			White = COLOR_WHITE
 		};
-	private:
+	public:
 		class Window
 		{
 		public:
-			//typedef typename Curses::Color Color;
-			Window(int startX, int startY, int width, int height)
-				: startX{ startX }
-				, startY{ startY }
-				, width{ width }
-				, height{ height }
-				, win{ newwin(height, width, startY, startX) }
-			{
-				assert(startX >= 0 && startY >= 0);
-				assert(width > 0 && height > 0);
-			}
+			Window(int startX, int startY, int width, int height);
 			Window(const Window&) = delete;
 			Window& operator=(const Window&) = delete;
 			~Window();
@@ -59,7 +49,7 @@ namespace curses
 			void Clear();
 			int GetCursorX();
 			int GetCursorY();
-		private:
+		protected:
 			int startX, startY, width, height;
 			WINDOW* win = nullptr;
 		};
@@ -82,26 +72,15 @@ namespace curses
 		Curses& operator=(Curses&&) = delete;
 		~Curses();
 
-		// creates a window in 'windows' unordered map
-		// if a window with specified name already exists, throws an exception
-		void AddWindow(std::string name, int startX, int startY, int width, int height);
-		
-		// get a ref to window
-		// throws an exception if window does not exist
-		Window& operator[](std::string name);
-		
-		// returns true if a window was erased, false otherwise
-		bool DeleteWindow(std::string name);
-
 		void SetCursorMode(CursorMode mode);
 		CursorMode GetCursorMode() { return cursorMode; }
 		void SetEchoMode(bool enable);
 		bool IsEchoEnabled() { return echoEnabled; }
 		bool HasColors() { return has_colors(); }
-	private:
+
+		static bool IsInitialized() { return (instances == 1); }
 		static chtype GetColorPair(Color f, Color b);
 	private:
-		std::unordered_map<std::string, Window> windows;
 		CursorMode cursorMode = CursorMode::Normal;
 		bool echoEnabled = true;
 		inline static int instances = 0; // instance counter, used to prevent creating multiple instances
