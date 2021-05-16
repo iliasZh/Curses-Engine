@@ -1,7 +1,8 @@
 #include "Game.h"
 
-Game::Game()
-	: cs{}
+Game::Game(unsigned fontWidthPx, std::wstring title)
+	: console{ fontWidthPx, title }	// console setup, then
+	, cs {}							// curses initialization
 {
 	using curses::Curses;
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
@@ -11,17 +12,17 @@ Game::Game()
 	cs["msg"].Write(1, 1, u8"Press ESC to quit", Curses::Color::Green);
 }
 
-int Game::Go()
+Game::Message Game::Go()
 {
 	Update();
 	DrawFrame();
 	if (GetKeyState(VK_ESCAPE) < 0)
 	{
-		return 0;
+		return Game::Message::Quit;
 	}
 	else
 	{
-		return 1;
+		return Game::Message::Ok;
 	}
 }
 

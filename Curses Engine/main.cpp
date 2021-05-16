@@ -10,19 +10,18 @@ int main()
 {
 	try
 	{
-		Console console{ 15u }; // font width = 15
-
-		Game game{};
+		Game game{ 15u };
 
 		while (true)
 		{
-			if (game.Go() == 0)
+			switch (game.Go())
 			{
-				return 0;
-			}
-			else
-			{
+			case Game::Message::Ok:
 				continue;
+				break;
+			case Game::Message::Quit:
+				return 0;
+				break;
 			}
 		}
 	}
