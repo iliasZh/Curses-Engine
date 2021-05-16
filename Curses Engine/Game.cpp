@@ -4,34 +4,32 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	: console{ fontWidthPx, title }	// console setup, then
 	, cs {}							// curses initialization
 {
-	using curses::Curses;
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
 	cs.AddWindow("main", 0, 0, Console::width, Console::height);
-	cs["main"].DrawBox(Curses::Color::Green);
+	cs["main"].DrawBox(Color::Green);
 	//cs["msg"].Write(1, 1, u8"Press ESC to quit", Curses::Color::Green);
 }
 
 Game::Message Game::Go()
 {
 	Update();
+	BeginFrame();
 	DrawFrame();
 	if (GetKeyState(VK_ESCAPE) < 0)
 	{
-		return Game::Message::Quit;
+		return Message::Quit;
 	}
 	else
 	{
-		return Game::Message::Ok;
+		return Message::Ok;
 	}
-	Sleep(500);
+
 }
 
 void Game::Update()
 {
-	
-	oldX = x;
-	oldY = y;
+	time += timer.Mark();
 
 	if (GetKeyState('W') < 0)
 	{
@@ -50,11 +48,10 @@ void Game::Update()
 		dir = Direction::Right;
 	}
 
-	time += timer.Mark();
-
-	if (time > 0.2f)
+	if (time > 0.15f)
 	{
-		time -= 0.2f;
+		time -= 0.15f;
+
 		switch (dir)
 		{
 		case Direction::Up:
@@ -70,14 +67,27 @@ void Game::Update()
 			x = std::min(x + 1, maxX);
 			break;
 		}
+
+		posUpdated = true;
 	}
 	
 }
 
+void Game::BeginFrame()
+{
+	if (posUpdated)
+	{
+		cs["main"].Clear();
+		cs["main"].DrawBox(Color::Green);
+	}
+}
+
 void Game::DrawFrame()
 {
-	typedef curses::Curses::Color Color;
-	cs["main"].Write(oldX * 2, oldY, u8"  ", Color::White, Color::Black);
-	cs["main"].Write(x * 2, y, u8"  ", Color::White, Color::Green);
-	cs["main"].Refresh();
+	if (posUpdated)
+	{
+		cs["main"].Write(x * 2, y, u8"  ", Color::White, Color::Green);
+		cs["main"].Refresh();
+		posUpdated = false;
+	}
 }

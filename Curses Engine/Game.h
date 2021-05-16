@@ -7,6 +7,8 @@
 class Game
 {
 public:
+	typedef curses::Curses Curses;
+	typedef curses::Curses::Color Color;
 	enum class Message
 	{
 		Ok,
@@ -20,13 +22,13 @@ public:
 	Game(unsigned fontWidthPx = 15u, std::wstring title = L"Curses Engine");
 	Message Go();
 	void Update();
+	void BeginFrame();
 	void DrawFrame();
 private:
 	Console console;
-	curses::Curses cs;
+	Curses cs;
 private:
-	Timer timer;
-	int oldX = 1, oldY = 1;
+	Timer timer{};
 	int x = 1, y = 1;
 	const int minX = 1;
 	const int minY = 1;
@@ -34,4 +36,5 @@ private:
 	const int maxY = Console::heightConPx - 2;
 	Direction dir = Direction::Up;
 	float time = 0.0f;
+	bool posUpdated = false;
 };
