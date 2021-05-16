@@ -5,8 +5,8 @@
 class Game
 {
 public:
-	Game() {}
-	void Go();
+	Game();
+	int Go();
 	void Update();
 	void DrawFrame();
 private:

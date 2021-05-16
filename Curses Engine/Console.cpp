@@ -9,8 +9,9 @@ Console::Console(unsigned fontWidthPx, std::wstring title)
 	// title setup
 	
 	// sanity check
-	assert(float(widthConPx) / float(heightConPx) <= maxAspectRatio);
+	assert(widthConPx <= heightConPx * maxAspectRatio);
 	assert(heightConPx * fontWidthPx * 2 <= maxHeightPx);
+	assert(widthConPx <= 60u && heightConPx <= 30u);
 
 	std::wstring setup = L"Curses Engine Setup...";
 	SetConsoleTitle(setup.c_str()); // set a special title to get a HWND to the console

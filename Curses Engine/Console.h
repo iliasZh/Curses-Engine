@@ -22,18 +22,18 @@ public:
 			errorType = "Console error";
 		}
 	};
-public:
-	static constexpr unsigned widthConPx = 60u;
-	static constexpr unsigned heightConPx = 30u;
 private:
 	HWND hConsole;
 	HANDLE consoleHandle;
 	std::wstring title;
 	unsigned fontWidthPx;
-	unsigned screenWidthPx = 1920;
-	unsigned screenHeightPx = 1080;
-	float maxAspectRatio = 2.0f;
-	unsigned maxHeightPx = 1000;
+	unsigned screenWidthPx = 1920u;
+	unsigned screenHeightPx = 1080u;
+	unsigned maxHeightPx = 1000u;
+	static constexpr unsigned maxAspectRatio = 2u;
+public:
+	static constexpr unsigned widthConPx = 60u;
+	static constexpr unsigned heightConPx = 30u;
 };
 
 #define THROW_CONSOLE_EXCEPTION(func, errorDesc) throw Console::Exception{(func), (errorDesc), __FILE__, __LINE__}

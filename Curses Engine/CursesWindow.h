@@ -54,7 +54,7 @@ namespace curses
 			void DrawBox(Color fg = Color::White, Color bg = Color::Black);
 			void Refresh();
 			void Touch();
-			void Write(int x, int y, std::u8string str, Color c = Color::White, Color bg = Color::Black);
+			void Write(int x, int y, std::u8string str, Color fg = Color::White, Color bg = Color::Black);
 			void GetCh();
 			void Clear();
 			int GetCursorX();
