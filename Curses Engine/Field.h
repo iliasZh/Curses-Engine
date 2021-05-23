@@ -41,10 +41,15 @@ public:
 	class Snake
 	{
 	public:
+		enum class Event
+		{
+			Move, Grow, Collision
+		};
+	public:
 		Snake(Field& field, std::vector<Fruit>& fruits);
 
 		void OnKeyPress(int vkCode);
-		bool Move();
+		Event Move();
 		void Draw();
 		
 		bool PosUpdated() const { return posUpdated; }

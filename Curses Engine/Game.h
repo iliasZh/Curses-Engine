@@ -38,7 +38,10 @@ private:
 	Field field;
 	Field::Snake& snake;
 	Window fieldBorder;
+	Window sidebar;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
+	unsigned score = 0u;
+	std::basic_stringstream<char8_t> ss;
 	//----------------USER-DEFINED-VARIABLES----------------
 };

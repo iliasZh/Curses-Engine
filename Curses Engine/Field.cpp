@@ -95,7 +95,7 @@ void Field::Snake::OnKeyPress(int vkCode)
 	}
 }
 
-bool Field::Snake::Move()
+Field::Snake::Event Field::Snake::Move()
 {
 	// check for self-collisions and wall collisions
 	Coord nextHeadLoc = segments[0] + dir;
@@ -105,7 +105,7 @@ bool Field::Snake::Move()
 			nextHeadLoc.x < 0 || !(nextHeadLoc.x < fieldWidth) ||
 			nextHeadLoc.y < 0 || !(nextHeadLoc.y < fieldHeight))
 		{
-			return false;
+			return Event::Collision;
 		}
 	}
 
@@ -136,7 +136,11 @@ bool Field::Snake::Move()
 	if (grow) segments.emplace_back(last);
 
 	posUpdated = true;
-	return true;
+	
+	if (grow)
+		return Event::Grow;
+	else
+		return Event::Move;
 }
 
 void Field::Snake::Draw()
