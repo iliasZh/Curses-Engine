@@ -164,6 +164,7 @@
     <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="IliasWin.h" />
+    <ClInclude Include="Snake.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="Viewport.h" />

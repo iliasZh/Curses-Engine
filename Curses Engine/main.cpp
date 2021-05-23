@@ -16,10 +16,10 @@ int main()
 		{
 			switch (game.Go())
 			{
-			case Game::Message::Ok:
+			case Game::State::Ok:
 				continue;
 				break;
-			case Game::Message::Quit:
+			case Game::State::Quit:
 				return 0;
 				break;
 			}
