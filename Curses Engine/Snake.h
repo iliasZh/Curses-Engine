@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Viewport.h"
+#include "Field.h"
 #include <vector>
 
 class Snake
@@ -19,10 +19,10 @@ public:
 	//enum class Direction { Up, Down, Left, Right };
 public:
 	typedef curses::Curses::Color Color;
-	Snake(Viewport& vp)
-		: vp{ vp }
-		, fieldWidth{ vp.WidthConPx() }
-		, fieldHeight{ vp.HeightConPx() }
+	Snake(Field& field)
+		: field{ field }
+		, fieldWidth{ field.WidthConPx() }
+		, fieldHeight{ field.HeightConPx() }
 	{
 		Coord c{ -1, 0 };
 		Coord head{ (fieldWidth + initialLength) / 2, fieldHeight / 2 };
@@ -85,13 +85,13 @@ public:
 	{
 		if (posUpdated)
 		{
-			vp.PutConPixel(segments[0].x, segments[0].y, headColor);
+			field.PutConPixel(segments[0].x, segments[0].y, headColor);
 
 			for (auto it = segments.begin() + 1; it != segments.end(); ++it)
 			{
-				vp.PutConPixel(it->x, it->y, bodyColor);
+				field.PutConPixel(it->x, it->y, bodyColor);
 			}
-			vp.Refresh();
+			field.Refresh();
 
 			drawnDir = dir;
 
@@ -101,7 +101,7 @@ public:
 
 	bool PosUpdated() const { return posUpdated; }
 private:
-	Viewport& vp;
+	Field& field;
 	Coord drawnDir{};
 	Coord dir{ 1, 0 };
 	int fieldWidth;

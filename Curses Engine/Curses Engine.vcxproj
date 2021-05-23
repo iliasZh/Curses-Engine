@@ -167,7 +167,7 @@
     <ClInclude Include="Snake.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
-    <ClInclude Include="Viewport.h" />
+    <ClInclude Include="Field.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Console.cpp" />

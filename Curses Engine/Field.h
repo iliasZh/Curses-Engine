@@ -2,12 +2,12 @@
 
 #include "CursesWindow.h"
 
-class Viewport : public curses::Curses::Window
+class Field : public curses::Curses::Window
 {
 public:
 	typedef curses::Curses Curses;
 	typedef Curses::Color Color;
-	Viewport(int startX, int startY, int widthConPx, int heightConPx)
+	Field(int startX, int startY, int widthConPx, int heightConPx)
 		: Curses::Window{ startX, startY, widthConPx * 2, heightConPx }
 	{}
 	int WidthConPx() const { return Width() / 2; }

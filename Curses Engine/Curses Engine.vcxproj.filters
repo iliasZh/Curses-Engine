@@ -36,7 +36,7 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Viewport.h">
+    <ClInclude Include="Field.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Snake.h">

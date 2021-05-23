@@ -3,16 +3,16 @@
 Game::Game(unsigned fontWidthPx, std::wstring title)
 	: console{ fontWidthPx, title }	// console setup, then
 	, cs{  }						// curses initialization
-	, vp{ 1, 1, 40 - 1, 30 - 2 }
-	, snake{ vp }
-	, vpBound {0, 0, 80, 30 }
+	, field{ 1, 1, 40 - 1, 30 - 2 }
+	, snake{ field }
+	, fieldBorder {0, 0, 80, 30 }
 {
 	assert(++instances == 1);
 
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
-	vpBound.DrawBox(Color::Red);
-	vpBound.Refresh();
+	fieldBorder.DrawBox(Color::Red);
+	fieldBorder.Refresh();
 }
 
 Game::State Game::Go()
@@ -62,7 +62,7 @@ void Game::BeginFrame()
 {
 	if (snake.PosUpdated())
 	{
-		vp.Clear();
+		field.Clear();
 	}
 }
 

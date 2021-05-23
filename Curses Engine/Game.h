@@ -3,7 +3,7 @@
 #include "CursesWindow.h"
 #include "Console.h"
 #include "Timer.h"
-#include "Viewport.h"
+#include "Field.h"
 #include "Snake.h"
 
 class Game
@@ -30,14 +30,14 @@ public:
 private:
 	Console console;
 	Curses cs;
-	State state;
+	State state = State::Ok;
 private:
 	inline static int instances = 0;
 private:
 	//----------------USER-DEFINED-VARIABLES----------------
 	Timer timer{};
-	Window vpBound;
-	Viewport vp;
+	Window fieldBorder;
+	Field field;
 	Snake snake;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
