@@ -4,7 +4,6 @@
 #include "Console.h"
 #include "Timer.h"
 #include "Field.h"
-#include "Snake.h"
 
 class Game
 {
@@ -38,7 +37,7 @@ private:
 	Timer timer{};
 	Window fieldBorder;
 	Field field;
-	Snake snake;
+	Field::Snake& snake;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
 	//----------------USER-DEFINED-VARIABLES----------------

@@ -164,7 +164,6 @@
     <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="IliasWin.h" />
-    <ClInclude Include="Snake.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="Field.h" />
@@ -175,7 +174,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="Viewport.cpp" />
+    <ClCompile Include="Field.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

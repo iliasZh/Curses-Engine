@@ -4,7 +4,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	: console{ fontWidthPx, title }	// console setup, then
 	, cs{  }						// curses initialization
 	, field{ 1, 1, 40 - 1, 30 - 2 }
-	, snake{ field }
+	, snake { field.snake }
 	, fieldBorder {0, 0, 80, 30 }
 {
 	assert(++instances == 1);
@@ -68,5 +68,5 @@ void Game::BeginFrame()
 
 void Game::DrawFrame()
 {
-	snake.Draw();
+	field.Draw();
 }
