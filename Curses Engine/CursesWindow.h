@@ -8,7 +8,6 @@
 #include "curses.h"
 #include <string>
 #include <cassert>
-#include <unordered_map>
 
 namespace curses
 {

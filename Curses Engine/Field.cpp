@@ -2,7 +2,7 @@
 
 Field::Field(int startX, int startY, int widthConPx, int heightConPx)
 	: Curses::Window{ startX, startY, widthConPx * 2, heightConPx }
-	, snake{ *this }
+	, snake{ *this, fruits }
 {
 	for (int i = 0; i < nFruits; ++i)
 	{
@@ -19,8 +19,46 @@ void Field::PutConPixel(int x, int y, Color c)
 
 
 
-Field::Snake::Snake(Field& field)
+Field::Fruit::Fruit(Field& field, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits)
 	: field{ field }
+{
+	Coord candidate;
+	srand((unsigned)time(NULL));
+	do
+	{
+		candidate = { rand() % field.WidthConPx(), rand() % field.HeightConPx() };
+	} 	while (IsColliding(candidate, snake, fruits));
+
+	pos = candidate;
+}
+
+void Field::Fruit::Draw() const
+{
+	field.PutConPixel(pos, c);
+	field.Refresh();
+}
+
+bool Field::Fruit::IsColliding(Coord c, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits)
+{
+	for (const auto& segment : snake)
+	{
+		if (c == segment)
+			return true;
+	}
+	for (const auto& fruit : fruits)
+	{
+		if (c == fruit.pos)
+			return true;
+	}
+	return false;
+}
+
+
+
+
+Field::Snake::Snake(Field& field, std::vector<Fruit>& fruits)
+	: field{ field }
+	, fruits{ fruits }
 	, fieldWidth{ field.WidthConPx() }
 	, fieldHeight{ field.HeightConPx() }
 {
@@ -59,10 +97,10 @@ void Field::Snake::OnKeyPress(int vkCode)
 
 bool Field::Snake::Move()
 {
+	// check for self-collisions and wall collisions
+	Coord nextHeadLoc = segments[0] + dir;
 	for (int i = 3; i < segments.size() - 1; ++i)
 	{
-		Coord nextHeadLoc = segments[0] + dir;
-
 		if (nextHeadLoc == segments[i] ||
 			nextHeadLoc.x < 0 || !(nextHeadLoc.x < fieldWidth) ||
 			nextHeadLoc.y < 0 || !(nextHeadLoc.y < fieldHeight))
@@ -71,12 +109,32 @@ bool Field::Snake::Move()
 		}
 	}
 
+	// check for collisions with fruit
+	bool grow = false;
+	for (auto it = fruits.begin(); it != fruits.end(); ++it)
+	{
+		if (nextHeadLoc == it->Pos())
+		{
+			grow = true;
+			std::swap(*it, fruits.back());
+			fruits.pop_back();
+			fruits.emplace_back(field, GetBody(), fruits);
+			break;
+		}
+	}
+
+
+	// move
+	Coord last = segments[segments.size() - 1];
 	for (auto rit = segments.rbegin(); rit != segments.rend() - 1; ++rit)
 	{
 		*rit = *(rit + 1);
 	}
-
 	segments[0] += dir;
+
+	// grow if needed
+	if (grow) segments.emplace_back(last);
+
 	posUpdated = true;
 	return true;
 }
@@ -100,38 +158,3 @@ void Field::Snake::Draw()
 }
 
 
-
-Field::Fruit::Fruit(Field& field, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits)
-	: field{ field }
-{
-	Coord candidate;
-	srand((unsigned)time(NULL));
-	do
-	{
-		candidate = { rand() % field.WidthConPx(), rand() % field.HeightConPx() };
-	}
-	while (IsColliding(candidate, snake, fruits));
-
-	pos = candidate;
-}
-
-void Field::Fruit::Draw() const
-{
-	field.PutConPixel(pos, c);
-	field.Refresh();
-}
-
-bool Field::Fruit::IsColliding(Coord c, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits)
-{
-	for (const auto& segment : snake)
-	{
-		if (c == segment)
-			return true;
-	}
-	for (const auto& fruit : fruits)
-	{
-		if (c == fruit.pos)
-			return true;
-	}
-	return false;
-}

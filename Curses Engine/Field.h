@@ -3,6 +3,7 @@
 #include "CursesWindow.h"
 #include <stdlib.h>
 #include <time.h>
+#include <vector>
 
 class Field : public curses::Curses::Window
 {
@@ -21,10 +22,26 @@ public:
 		bool operator!=(const Coord& c) { return !(*this == c); }
 	};
 public:
+	class Fruit
+	{
+	public:
+		Fruit(Field& field, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits);
+		Fruit(const Fruit& f) : pos{ f.pos }, field{ f.field } {}
+		Fruit& operator=(const Fruit& f) { pos = f.pos; return *this; }
+		void Draw() const;
+		const Coord& Pos() const { return pos; }
+	private:
+		bool IsColliding(Coord c, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits);
+	private:
+		Coord pos{ 0,0 };
+		Field& field;
+		const Color c = Color::Red;
+	};
+
 	class Snake
 	{
 	public:
-		Snake(Field& field);
+		Snake(Field& field, std::vector<Fruit>& fruits);
 
 		void OnKeyPress(int vkCode);
 		bool Move();
@@ -34,6 +51,7 @@ public:
 		const std::vector<Coord>& GetBody() const { return segments; }
 	private:
 		Field& field;
+		std::vector<Fruit>& fruits;
 		Coord drawnDir{};
 		Coord dir{ 1,0 };
 		int fieldWidth, fieldHeight;
@@ -43,21 +61,15 @@ public:
 		bool posUpdated = true;
 		std::vector<Coord> segments;
 	};
-	class Fruit
-	{
-	public:
-		Fruit(Field& field, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits);
-		void Draw() const;
-	private:
-		bool IsColliding(Coord c, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits);
-	private:
-		Coord pos{ 0,0 };
-		Field& field;
-		const Color c = Color::Red;
-	};
+	
 
 public:
 	Field(int startX, int startY, int widthConPx, int heightConPx);
+	Field(const Field&) = delete;
+	Field(Field&&) = delete;
+	Field& operator=(const Field&) = delete;
+	Field& operator=(Field&&) = delete;
+
 
 	int WidthConPx() const { return Width() / 2; }
 	int HeightConPx() const { return Height(); }
@@ -74,6 +86,6 @@ public:
 	}
 public:
 	Snake snake;
-	std::vector<Fruit> fruits;
+	std::vector<Fruit> fruits{};
 	const int nFruits = 3;
 };

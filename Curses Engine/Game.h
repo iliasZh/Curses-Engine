@@ -35,9 +35,9 @@ private:
 private:
 	//----------------USER-DEFINED-VARIABLES----------------
 	Timer timer{};
-	Window fieldBorder;
 	Field field;
 	Field::Snake& snake;
+	Window fieldBorder;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
 	//----------------USER-DEFINED-VARIABLES----------------
