@@ -7,7 +7,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, snake{ field.snake }
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
-	, test{ 0, 0, console.width, console.height }
+	, menu{ 0, 0, console.width, console.height }
 {
 	assert(++instances == 1);
 
@@ -16,10 +16,10 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
 
-	test.AddButton(u8"PLAY");
-	test.AddButton(u8"EXIT");
-	test.Center();
-	test.DrawButtons();
+	menu.AddButton(u8"PLAY");
+	menu.AddButton(u8"EXIT");
+	menu.Center();
+	menu.DrawButtons();
 }
 
 bool Game::Go()
@@ -40,40 +40,7 @@ void Game::Update()
 	switch (state)
 	{
 	case State::Menu:
-		if (GetKeyState(VK_UP) < 0)
-		{
-			if (!isPressed)
-			{
-				test.OnButtonPrev();
-				isPressed = true;
-			}
-		}
-		else if (GetKeyState(VK_DOWN) < 0)
-		{
-			if (!isPressed)
-			{
-				test.OnButtonNext();
-				isPressed = true;
-			}
-		}
-		else
-		{
-			isPressed = false;
-		}
-
-		if (GetKeyState(VK_RETURN) < 0)
-		{
-			switch (test.OnButtonPress())
-			{
-			case 0:
-				state = State::Play;
-				OnGameBegin();
-				break;
-			case 1:
-				state = State::Quit;
-				break;
-			}
-		}
+		Menu();
 		break;
 	case State::Play:
 		Loop();
@@ -82,6 +49,44 @@ void Game::Update()
 		break;
 	default:
 		break;
+	}
+}
+
+void Game::Menu()
+{
+	if (GetKeyState('W') < 0)
+	{
+		if (!isPressed)
+		{
+			menu.OnButtonPrev();
+			isPressed = true;
+		}
+	}
+	else if (GetKeyState('S') < 0)
+	{
+		if (!isPressed)
+		{
+			menu.OnButtonNext();
+			isPressed = true;
+		}
+	}
+	else
+	{
+		isPressed = false;
+	}
+
+	if (GetKeyState('F') < 0)
+	{
+		switch (menu.OnButtonPress())
+		{
+		case 0:
+			state = State::Play;
+			OnGameBegin();
+			break;
+		case 1:
+			state = State::Quit;
+			break;
+		}
 	}
 }
 
@@ -145,7 +150,7 @@ void Game::BeginFrame()
 	switch (state)
 	{
 	case State::Menu:
-		test.Clear();
+		menu.Clear();
 		break;
 	case State::Play:
 		if (snake.PosUpdated())
@@ -164,10 +169,12 @@ void Game::DrawFrame()
 	switch (state)
 	{
 	case State::Menu:
-		test.DrawButtons();
+		menu.WriteCentered(18, u8"Use W/S to choose, and F to select");
+		menu.DrawButtons();
 		break;
 	case State::Play:
 		field.Draw();
+		break;
 	default:
 		break;
 	}

@@ -27,6 +27,7 @@ public:
 	Game& operator=(Game&&)			= delete;
 	bool Go();
 	void Update();
+	void Menu();
 	void OnGameBegin();
 	void Loop();
 	void BeginFrame();
@@ -44,7 +45,7 @@ private:
 	Field::Snake& snake;
 	Window fieldBorder;
 	Sidebar sidebar;
-	UIWindow test;
+	UIWindow menu;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
 	bool isPressed = false;
