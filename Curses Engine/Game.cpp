@@ -7,6 +7,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, snake{ field.snake }
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
+	, test{ 80, 15, 40, 15 }
 {
 	assert(++instances == 1);
 
@@ -20,6 +21,11 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	sidebar.WriteInfo();
 	sidebar.WriteScore();
 	sidebar.Refresh();
+
+	test.AddButton(u8"PLAY");
+	test.AddButton(u8"MENU");
+	test.AddButton(u8"EXIT");
+	test.DrawButtons();
 }
 
 bool Game::Go()
@@ -72,6 +78,28 @@ void Game::Loop()
 		snake.OnKeyPress('D');
 	}
 
+	if (GetKeyState(VK_UP) < 0)
+	{
+		if (!isPressed) 
+		{
+			test.OnButtonPrev();
+			isPressed = true;
+		}
+		
+	}
+	else if (GetKeyState(VK_DOWN) < 0)
+	{
+		if (!isPressed)
+		{
+			test.OnButtonNext();
+			isPressed = true;
+		}
+	}
+	else
+	{
+		isPressed = false;
+	}
+
 	if (time > movePeriod)
 	{
 		time -= movePeriod;
@@ -103,4 +131,5 @@ void Game::BeginFrame()
 void Game::DrawFrame()
 {
 	field.Draw();
+	test.DrawButtons();
 }

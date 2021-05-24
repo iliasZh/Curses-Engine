@@ -43,8 +43,9 @@ private:
 	Field::Snake& snake;
 	Window fieldBorder;
 	Sidebar sidebar;
+	UIWindow test;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
-	
+	bool isPressed = false;
 	//----------------USER-DEFINED-VARIABLES----------------
 };
