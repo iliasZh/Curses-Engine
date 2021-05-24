@@ -109,6 +109,6 @@ private:
 	int currButton = -1;
 	int buttonMargin = 2;
 	Color buttonText = Color::Black;
-	Color buttonHighlight = Color::Blue;
+	Color buttonHighlight = Color::Green;
 	Color buttonBase = Color::Cyan;
 };
