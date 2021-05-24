@@ -70,6 +70,17 @@ public:
 		int menuHeight = (int)buttons.size() * (buttonSpacing + 1) - buttonSpacing;
 		buttonsStartLine = Height() / 2 - menuHeight / 2;
 	}
+	int GetUpperLine() const
+	{
+		return buttonsStartLine;
+	}
+	int GetLowerLine() const
+	{
+		if (buttons.empty())
+			return buttonsStartLine;
+		else
+			return buttonsStartLine + ((int)buttons.size() - 1) * (buttonSpacing + 1);
+	}
 	void OnButtonNext()
 	{
 		assert(!buttons.empty());

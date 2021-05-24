@@ -170,7 +170,8 @@ void Game::DrawFrame()
 	switch (state)
 	{
 	case State::Menu:
-		menu.WriteCentered(18, u8"Use W/S to choose, and F to select");
+		menu.WriteCentered(menu.GetLowerLine() + 3, u8"Use W/S to choose, and F to select");
+		menu.WriteCentered(menu.GetUpperLine() - 3, u8"  SNAKE GAME  ", Color::Green);
 		menu.DrawButtons();
 		break;
 	case State::Play:

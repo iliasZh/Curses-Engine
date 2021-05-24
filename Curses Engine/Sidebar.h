@@ -18,7 +18,7 @@ public:
 	void WriteInfo()
 	{
 		WriteCentered(2, u8"Use WASD to move");
-		WriteCentered(4, u8"Press Esc to quit");
+		WriteCentered(4, u8"Press Esc to pause");
 	}
 private:
 	std::basic_stringstream<char8_t> ss;
