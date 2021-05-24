@@ -4,6 +4,7 @@
 #include "Console.h"
 #include "Timer.h"
 #include "Field.h"
+#include "Sidebar.h"
 
 class Game
 {
@@ -38,10 +39,10 @@ private:
 	Field field;
 	Field::Snake& snake;
 	Window fieldBorder;
-	Window sidebar;
+	Sidebar sidebar;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
 	unsigned score = 0u;
-	std::basic_stringstream<char8_t> ss;
+	
 	//----------------USER-DEFINED-VARIABLES----------------
 };

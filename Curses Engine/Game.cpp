@@ -12,16 +12,13 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
+	
 	fieldBorder.DrawBox(Color::Red);
 	fieldBorder.Refresh();
-	sidebar.DrawBox(Color::Blue);
-	sidebar.Write(12, 3, u8"Use WASD to move", Color::Cyan);
-	sidebar.Write(12, 6, u8"Press Esc to quit", Color::Magenta);
 
-	ss << u8"Your score: " << score;
-	sidebar.Write(12, 9, ss.str().c_str(), Color::Blue, Color::Cyan);
-	ss.str(u8"");
-	ss.clear();
+	sidebar.DrawBox(Color::Blue);
+	sidebar.WriteInfo();
+	sidebar.WriteScore();
 	sidebar.Refresh();
 }
 
@@ -68,11 +65,8 @@ void Game::Update()
 		case Field::Snake::Event::Move:
 			break;
 		case Field::Snake::Event::Grow:
-			++score;
-			ss << u8"Your score: " << score;
-			sidebar.Write(12, 9, ss.str().c_str(), Color::Blue, Color::Cyan);
-			ss.str(u8"");
-			ss.clear();
+			sidebar.OnSnakeGrow();
+			sidebar.WriteScore();
 			sidebar.Refresh();
 			break;
 		case Field::Snake::Event::Collision:

@@ -50,7 +50,7 @@ namespace curses
 			int GetStartY() const;
 			int Width() const { return width; }
 			int Height() const { return height; }
-		protected:
+		private:
 			int startX, startY, width, height;
 			WINDOW* win = nullptr;
 		};
