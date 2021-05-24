@@ -26,34 +26,51 @@ public:
 		if (!buttons.empty())
 		{
 			int currLine = buttonsStartLine;
-			for (int i = 0; i < buttons.size(); ++i, currLine += (buttonsSpacing + 1))
+			std::u8string margin(buttonMargin, ' ');
+			std::u8string marginSmall(buttonMargin - 1, ' ');
+			std::u8string marginL = marginSmall + u8">";
+			std::u8string marginR = u8"<" + marginSmall;
+			for (int i = 0; i < buttons.size(); ++i, currLine += (buttonSpacing + 1))
 			{
-				std::u8string margin(buttonMargin, ' ');
-
-				std::u8string text = margin + buttons[i] + margin;
-
 				if (i != currButton)
+				{
+					std::u8string text = margin + buttons[i] + margin;
 					WriteCentered(currLine, text, buttonText, buttonBase);
+				}
 				else
+				{
+					std::u8string text = marginL + buttons[i] + marginR;
 					WriteCentered(currLine, text, buttonText, buttonHighlight);
+				}
 			}
 		}
 		Refresh();
 	}
+	void Center()
+	{
+		int menuHeight = (int)buttons.size() * (buttonSpacing + 1) - buttonSpacing;
+		buttonsStartLine = Height() / 2 - menuHeight / 2;
+	}
 	void OnButtonNext()
 	{
+		assert(!buttons.empty());
 		if (++currButton == (int)buttons.size())
 			currButton = 0;
 	}
 	void OnButtonPrev()
 	{
+		assert(!buttons.empty());
 		if (--currButton == -1)
 			currButton = (int)buttons.size() - 1;
+	}
+	int OnButtonPress()
+	{
+		return currButton;
 	}
 private:
 	std::vector<std::u8string> buttons;
 	int buttonsStartLine = 2;				// starting line for buttons
-	int buttonsSpacing = 1;					// lines in between buttons
+	int buttonSpacing = 1;					// lines in between buttons
 	int currButton = -1;
 	int buttonMargin = 2;
 	Color buttonText = Color::Black;

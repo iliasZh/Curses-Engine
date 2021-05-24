@@ -7,24 +7,18 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, snake{ field.snake }
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
-	, test{ 80, 15, 40, 15 }
+	, test{ 0, 0, console.width, console.height }
 {
 	assert(++instances == 1);
 
+	state = State::Menu;
+
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
-	
-	fieldBorder.DrawBox(Color::Red);
-	fieldBorder.Refresh();
-
-	sidebar.DrawBox(Color::Blue);
-	sidebar.WriteInfo();
-	sidebar.WriteScore();
-	sidebar.Refresh();
 
 	test.AddButton(u8"PLAY");
-	test.AddButton(u8"MENU");
 	test.AddButton(u8"EXIT");
+	test.Center();
 	test.DrawButtons();
 }
 
@@ -46,6 +40,40 @@ void Game::Update()
 	switch (state)
 	{
 	case State::Menu:
+		if (GetKeyState(VK_UP) < 0)
+		{
+			if (!isPressed)
+			{
+				test.OnButtonPrev();
+				isPressed = true;
+			}
+		}
+		else if (GetKeyState(VK_DOWN) < 0)
+		{
+			if (!isPressed)
+			{
+				test.OnButtonNext();
+				isPressed = true;
+			}
+		}
+		else
+		{
+			isPressed = false;
+		}
+
+		if (GetKeyState(VK_RETURN) < 0)
+		{
+			switch (test.OnButtonPress())
+			{
+			case 0:
+				state = State::Play;
+				OnGameBegin();
+				break;
+			case 1:
+				state = State::Quit;
+				break;
+			}
+		}
 		break;
 	case State::Play:
 		Loop();
@@ -55,6 +83,19 @@ void Game::Update()
 	default:
 		break;
 	}
+}
+
+void Game::OnGameBegin()
+{
+	fieldBorder.DrawBox(Color::Red);
+	fieldBorder.Refresh();
+
+	sidebar.DrawBox(Color::Blue);
+	sidebar.WriteInfo();
+	sidebar.WriteScore();
+	sidebar.Refresh();
+
+	timer.Mark();
 }
 
 void Game::Loop()
@@ -78,28 +119,7 @@ void Game::Loop()
 		snake.OnKeyPress('D');
 	}
 
-	if (GetKeyState(VK_UP) < 0)
-	{
-		if (!isPressed) 
-		{
-			test.OnButtonPrev();
-			isPressed = true;
-		}
-		
-	}
-	else if (GetKeyState(VK_DOWN) < 0)
-	{
-		if (!isPressed)
-		{
-			test.OnButtonNext();
-			isPressed = true;
-		}
-	}
-	else
-	{
-		isPressed = false;
-	}
-
+	
 	if (time > movePeriod)
 	{
 		time -= movePeriod;
@@ -122,14 +142,33 @@ void Game::Loop()
 
 void Game::BeginFrame()
 {
-	if (snake.PosUpdated())
+	switch (state)
 	{
-		field.Clear();
+	case State::Menu:
+		test.Clear();
+		break;
+	case State::Play:
+		if (snake.PosUpdated())
+		{
+			field.Clear();
+		}
+		break;
+	default:
+		break;
 	}
+	
 }
 
 void Game::DrawFrame()
 {
-	field.Draw();
-	test.DrawButtons();
+	switch (state)
+	{
+	case State::Menu:
+		test.DrawButtons();
+		break;
+	case State::Play:
+		field.Draw();
+	default:
+		break;
+	}
 }

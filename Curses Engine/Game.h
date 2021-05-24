@@ -27,13 +27,14 @@ public:
 	Game& operator=(Game&&)			= delete;
 	bool Go();
 	void Update();
+	void OnGameBegin();
 	void Loop();
 	void BeginFrame();
 	void DrawFrame();
 private:
 	Console console;
 	Curses cs;
-	State state = State::Play;
+	State state;
 private:
 	inline static int instances = 0;
 private:
