@@ -7,7 +7,7 @@ class Sidebar : public UIWindow
 public:
 	using UIWindow::UIWindow;
 public:
-	void OnSnakeGrow() { ++score; }
+	void OnSnakeGrow() { ++score; WriteScore(); Refresh(); }
 	void WriteScore()
 	{ 
 		ss << u8"Your score: " << score;

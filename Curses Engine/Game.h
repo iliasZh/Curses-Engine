@@ -14,7 +14,9 @@ public:
 	typedef curses::Curses::Color Color;
 	enum class State
 	{
-		Ok,
+		Menu,
+		Play,
+		Dead,
 		Quit
 	};
 public:
@@ -23,14 +25,15 @@ public:
 	Game(Game&&)					= delete;
 	Game& operator=(const Game&)	= delete;
 	Game& operator=(Game&&)			= delete;
-	State Go();
+	bool Go();
 	void Update();
+	void Loop();
 	void BeginFrame();
 	void DrawFrame();
 private:
 	Console console;
 	Curses cs;
-	State state = State::Ok;
+	State state = State::Play;
 private:
 	inline static int instances = 0;
 private:
@@ -42,7 +45,6 @@ private:
 	Sidebar sidebar;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
-	unsigned score = 0u;
 	
 	//----------------USER-DEFINED-VARIABLES----------------
 };

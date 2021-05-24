@@ -22,7 +22,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	sidebar.Refresh();
 }
 
-Game::State Game::Go()
+bool Game::Go()
 {
 	BeginFrame();
 	DrawFrame();
@@ -32,10 +32,26 @@ Game::State Game::Go()
 		state = State::Quit;
 	}
 
-	return state;
+	return state == State::Quit; // true == quit
 }
 
 void Game::Update()
+{
+	switch (state)
+	{
+	case State::Menu:
+		break;
+	case State::Play:
+		Loop();
+		break;
+	case State::Dead:
+		break;
+	default:
+		break;
+	}
+}
+
+void Game::Loop()
 {
 	time += timer.Mark();
 
@@ -66,8 +82,6 @@ void Game::Update()
 			break;
 		case Field::Snake::Event::Grow:
 			sidebar.OnSnakeGrow();
-			sidebar.WriteScore();
-			sidebar.Refresh();
 			break;
 		case Field::Snake::Event::Collision:
 			state = State::Quit;

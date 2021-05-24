@@ -16,6 +16,7 @@ public:
 	{
 		const int size = (int)count_codepoints(text);
 		assert(size <= Width() - 2);
-		Write((Width() - size) / 2, line, text, fg, bg);
+		Write(Width() / 2 - size / 2, line, text, fg, bg);
 	}
+
 };

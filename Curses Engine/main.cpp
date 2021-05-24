@@ -14,15 +14,8 @@ int main()
 
 		while (true)
 		{
-			switch (game.Go())
-			{
-			case Game::State::Ok:
-				continue;
-				break;
-			case Game::State::Quit:
+			if (game.Go())
 				return 0;
-				break;
-			}
 		}
 	}
 	catch (const ExceptionBase& e)
