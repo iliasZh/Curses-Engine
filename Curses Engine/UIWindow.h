@@ -22,6 +22,12 @@ public:
 
 		if (buttons.size() == 1) currButton = 0;
 	}
+	void ChangeButton(int index, std::u8string newText)
+	{
+		assert(index >= 0 && index < (int)buttons.size());
+
+		buttons[index] = newText;
+	}
 	void DrawButtons()
 	{
 		if (!buttons.empty())

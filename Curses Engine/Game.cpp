@@ -27,11 +27,7 @@ bool Game::Go()
 	BeginFrame();
 	DrawFrame();
 	Update();
-	if (GetKeyState(VK_ESCAPE) < 0)
-	{
-		state = State::Quit;
-	}
-
+	
 	return state == State::Quit; // true == quit
 }
 
@@ -124,6 +120,11 @@ void Game::Loop()
 		snake.OnKeyPress('D');
 	}
 
+	if (GetKeyState(VK_ESCAPE) < 0)
+	{
+		menu.ChangeButton(0, u8"CONTINUE");
+		state = State::Menu;
+	}
 	
 	if (time > movePeriod)
 	{
