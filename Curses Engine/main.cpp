@@ -10,7 +10,7 @@ int main()
 {
 	try
 	{
-		Game game{ 10u };
+		Game game{ 10u, L"Snake Game" };
 
 		while (true)
 		{

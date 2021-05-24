@@ -8,6 +8,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
 	, menu{ 0, 0, console.width, console.height }
+	, deathMenu{ 32, 12, 15, 7 }
 {
 	assert(++instances == 1);
 
@@ -16,8 +17,13 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
 
+	deathMenu.AddButton(u8"TRY AGAIN");
+	deathMenu.AddButton(u8"QUIT");
+	deathMenu.Center();
+	deathMenu.ShiftStartLine(1);
+
 	menu.AddButton(u8"PLAY");
-	menu.AddButton(u8"EXIT");
+	menu.AddButton(u8"QUIT");
 	menu.Center();
 	menu.DrawButtons();
 }
@@ -42,6 +48,7 @@ void Game::Update()
 		Loop();
 		break;
 	case State::Dead:
+		DeathMenu();
 		break;
 	default:
 		break;
@@ -86,9 +93,49 @@ void Game::Menu()
 	}
 }
 
+void Game::DeathMenu()
+{
+	if (GetKeyState('W') < 0)
+	{
+		if (!isPressed)
+		{
+			deathMenu.OnButtonPrev();
+			isPressed = true;
+		}
+	}
+	else if (GetKeyState('S') < 0)
+	{
+		if (!isPressed)
+		{
+			deathMenu.OnButtonNext();
+			isPressed = true;
+		}
+	}
+	else
+	{
+		isPressed = false;
+	}
+
+	if (GetKeyState('F') < 0)
+	{
+		switch (deathMenu.OnButtonPress())
+		{
+		case 0:
+			sidebar.ResetScore();
+			field.Reset();
+			OnGameResume();
+			state = State::Play;
+			break;
+		case 1:
+			state = State::Quit;
+			break;
+		}
+	}
+}
+
 void Game::OnGameResume()
 {
-	fieldBorder.DrawBox(Color::Red);
+	fieldBorder.DrawBox(Color::White);
 	fieldBorder.Refresh();
 
 	sidebar.DrawBox(Color::Blue);
@@ -96,6 +143,7 @@ void Game::OnGameResume()
 	sidebar.WriteScore();
 	sidebar.Refresh();
 
+	time = 0.0f;
 	timer.Mark();
 }
 
@@ -138,7 +186,7 @@ void Game::Loop()
 			sidebar.OnSnakeGrow();
 			break;
 		case Field::Snake::Event::Collision:
-			state = State::Quit;
+			state = State::Dead;
 			break;
 		default:
 			break;
@@ -159,6 +207,9 @@ void Game::BeginFrame()
 			field.Clear();
 		}
 		break;
+	case State::Dead:
+		deathMenu.Clear();
+		break;
 	default:
 		break;
 	}
@@ -171,11 +222,16 @@ void Game::DrawFrame()
 	{
 	case State::Menu:
 		menu.WriteCentered(menu.GetLowerLine() + 3, u8"Use W/S to choose, and F to select");
-		menu.WriteCentered(menu.GetUpperLine() - 3, u8"  SNAKE GAME  ", Color::Green);
+		menu.WriteCentered(menu.GetUpperLine() - 3, u8"SNAKE GAME", Color::Green);
 		menu.DrawButtons();
 		break;
 	case State::Play:
 		field.Draw();
+		break;
+	case State::Dead:
+		deathMenu.DrawBox(Color::Red);
+		deathMenu.WriteCentered(deathMenu.GetUpperLine() - 2, u8"YOU DIED", Color::Red);
+		deathMenu.DrawButtons();
 		break;
 	default:
 		break;

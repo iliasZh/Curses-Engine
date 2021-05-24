@@ -17,7 +17,7 @@ public:
 	}
 	void AddButton(std::u8string text)
 	{
-		assert(count_codepoints(text) < Width() - 2 * buttonMargin);
+		assert(count_codepoints(text) <= Width() - 2 * buttonMargin - 2);
 		buttons.emplace_back(std::move(text));
 
 		if (buttons.size() == 1) currButton = 0;
@@ -80,6 +80,11 @@ public:
 			return buttonsStartLine;
 		else
 			return buttonsStartLine + ((int)buttons.size() - 1) * (buttonSpacing + 1);
+	}
+	void ShiftStartLine(int offset)
+	{
+		buttonsStartLine += offset;
+		assert(GetUpperLine() >= 0 && GetLowerLine() < Height());
 	}
 	void OnButtonNext()
 	{

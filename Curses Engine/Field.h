@@ -51,16 +51,20 @@ public:
 		void OnKeyPress(int vkCode);
 		Event Move();
 		void Draw();
+		void Pop();
 		
+		void Reset();
+
 		bool PosUpdated() const { return posUpdated; }
 		const std::vector<Coord>& GetBody() const { return segments; }
+	public:
+		const int initialLength = 5;
 	private:
 		Field& field;
 		std::vector<Fruit>& fruits;
 		Coord drawnDir{};
 		Coord dir{ 1,0 };
 		int fieldWidth, fieldHeight;
-		const int initialLength = 5;
 		const Color headColor = Color::Yellow;
 		const Color bodyColor = Color::Green;
 		bool posUpdated = true;
@@ -75,6 +79,7 @@ public:
 	Field& operator=(const Field&) = delete;
 	Field& operator=(Field&&) = delete;
 
+	void Reset();
 
 	int WidthConPx() const { return Width() / 2; }
 	int HeightConPx() const { return Height(); }

@@ -28,6 +28,7 @@ public:
 	bool Go();
 	void Update();
 	void Menu();
+	void DeathMenu();
 	void OnGameResume();
 	void Loop();
 	void BeginFrame();
@@ -46,6 +47,7 @@ private:
 	Window fieldBorder;
 	Sidebar sidebar;
 	UIWindow menu;
+	UIWindow deathMenu;
 	float movePeriod = 0.10f;
 	float time = 0.0f;
 	bool isPressed = false;

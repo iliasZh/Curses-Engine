@@ -17,6 +17,22 @@ void Field::PutConPixel(int x, int y, Color c)
 	Write(2 * x, y, u8"  ", Color::White, c);
 }
 
+void Field::Reset()
+{
+	while (!fruits.empty())
+	{
+		fruits.pop_back();
+	}
+	assert(fruits.empty());
+
+	snake.Reset();
+
+	for (int i = 0; i < nFruits; ++i)
+	{
+		fruits.emplace_back(*this, snake.GetBody(), fruits);
+	}
+}
+
 
 
 Field::Fruit::Fruit(Field& field, const std::vector<Coord>& snake, const std::vector<Fruit>& fruits)
@@ -159,6 +175,33 @@ void Field::Snake::Draw()
 
 		posUpdated = false;
 	}
+}
+
+void Field::Snake::Pop()
+{
+	segments.pop_back();
+}
+
+void Field::Snake::Reset()
+{
+	for (int i = (int)segments.size(); i > initialLength; --i)
+	{
+		segments.pop_back();
+	}
+
+	assert(segments.size() == initialLength);
+
+	Coord c{ -1, 0 };
+	Coord head{ (fieldWidth + initialLength) / 2, fieldHeight / 2 };
+	for (int i = 0; i < initialLength; ++i)
+	{
+		segments[i] = head + c * i;
+	}
+
+	dir = { 1,0 };
+	drawnDir = { 1,0 };
+
+	posUpdated = true;
 }
 
 

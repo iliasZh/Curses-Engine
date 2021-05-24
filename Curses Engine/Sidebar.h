@@ -20,6 +20,8 @@ public:
 		WriteCentered(2, u8"Use WASD to move");
 		WriteCentered(4, u8"Press Esc to pause");
 	}
+	unsigned GetScore() const { return score; }
+	void ResetScore() { score = 0; }
 private:
 	std::basic_stringstream<char8_t> ss;
 	unsigned score = 0;
