@@ -81,7 +81,7 @@ void Game::Menu()
 		{
 		case 0:
 			state = State::Play;
-			OnGameBegin();
+			OnGameResume();
 			break;
 		case 1:
 			state = State::Quit;
@@ -90,7 +90,7 @@ void Game::Menu()
 	}
 }
 
-void Game::OnGameBegin()
+void Game::OnGameResume()
 {
 	fieldBorder.DrawBox(Color::Red);
 	fieldBorder.Refresh();

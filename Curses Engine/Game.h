@@ -28,7 +28,7 @@ public:
 	bool Go();
 	void Update();
 	void Menu();
-	void OnGameBegin();
+	void OnGameResume();
 	void Loop();
 	void BeginFrame();
 	void DrawFrame();

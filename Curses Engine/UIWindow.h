@@ -17,6 +17,7 @@ public:
 	}
 	void AddButton(std::u8string text)
 	{
+		assert(count_codepoints(text) < Width() - 2 * buttonMargin);
 		buttons.emplace_back(std::move(text));
 
 		if (buttons.size() == 1) currButton = 0;
@@ -26,20 +27,32 @@ public:
 		if (!buttons.empty())
 		{
 			int currLine = buttonsStartLine;
-			std::u8string margin(buttonMargin, ' ');
-			std::u8string marginSmall(buttonMargin - 1, ' ');
-			std::u8string marginL = marginSmall + u8">";
-			std::u8string marginR = u8"<" + marginSmall;
+
+			int maxTextLen = 0;
+			for (const auto& text : buttons)
+			{
+				const int currTextLen = (int)count_codepoints(text);
+				if (maxTextLen < currTextLen) maxTextLen = currTextLen;
+			}
+
 			for (int i = 0; i < buttons.size(); ++i, currLine += (buttonSpacing + 1))
 			{
+				const int lenDiff = maxTextLen - (int)count_codepoints(buttons[i]);
+
+				const int lmlen = buttonMargin + lenDiff / 2;			// left margin len
+				const int rmlen = buttonMargin + lenDiff - lenDiff / 2;	// right margin len
+
+				std::u8string marginL(lmlen - 1, ' ');
+				std::u8string marginR(rmlen - 1, ' ');
+
 				if (i != currButton)
 				{
-					std::u8string text = margin + buttons[i] + margin;
+					std::u8string text = marginL + u8' ' + buttons[i] + u8' ' + marginR;
 					WriteCentered(currLine, text, buttonText, buttonBase);
 				}
 				else
 				{
-					std::u8string text = marginL + buttons[i] + marginR;
+					std::u8string text = marginL + u8'>' + buttons[i] + u8'<' + marginR;
 					WriteCentered(currLine, text, buttonText, buttonHighlight);
 				}
 			}
