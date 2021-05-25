@@ -8,6 +8,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
 	, mainMenu{ 0, 0, console.width, console.height }
+	, settingsMenu{ 0, 0, console.width, console.height }
 	, deathMenu{ 32, 12, 15, 7 }
 	, pauseMenu{ 32, 12, 15, 7 }
 {
@@ -31,7 +32,13 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	pauseMenu.Center();
 	pauseMenu.ShiftStartLine(1);
 
+	settingsMenu.AddButton(Buttons::WrapSettingOn);
+	settingsMenu.AddButton(Buttons::SnakeSpeed + Buttons::Normal);
+	settingsMenu.AddButton(Buttons::Back);
+	settingsMenu.Center();
+
 	mainMenu.AddButton(Buttons::Play);
+	mainMenu.AddButton(Buttons::Settings);
 	mainMenu.AddButton(Buttons::Quit);
 	mainMenu.Center();
 	mainMenu.DrawButtons();
@@ -52,6 +59,9 @@ void Game::Update()
 	{
 	case State::Menu:
 		MainMenu();
+		break;
+	case State::Settings:
+		SettingsMenu();
 		break;
 	case State::Play:
 		Loop();
@@ -86,14 +96,65 @@ void Game::MainMenu()
 
 	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
-		switch (mainMenu.PressedButtonIndex())
+		switch (mainMenu.CurrentButtonIndex())
 		{
 		case 0:
 			OnGameResume();
+			snake.SetWrappingMode(settings.GetWrappingMode());
 			state = State::Play;
 			break;
 		case 1:
+			state = State::Settings;
+			break;
+		case 2:
 			state = State::Quit;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void Game::SettingsMenu()
+{
+	if (kbd.IsBindingPressedOnce(Controls::Up))
+	{
+		settingsMenu.OnButtonPrev();
+	}
+	else if (kbd.IsBindingPressedOnce(Controls::Down))
+	{
+		settingsMenu.OnButtonNext();
+	}
+
+	if (kbd.IsBindingPressedOnce(Controls::Select))
+	{
+		switch (settingsMenu.CurrentButtonIndex())
+		{
+		case 0:
+			settings.ToggleWrappingMode();
+			if (settings.GetWrappingMode())
+				settingsMenu.ChangeButton(0, Buttons::WrapSettingOn);
+			else
+				settingsMenu.ChangeButton(0, Buttons::WrapSettingOff);
+			break;
+		case 1:
+			settings.ToggleSnakeSpeed();
+			switch (settings.GetSnakeSpeedMode())
+			{
+			case 0:
+				settingsMenu.ChangeButton(1, Buttons::SnakeSpeed + Buttons::Slow);
+				break;
+			case 1:
+				settingsMenu.ChangeButton(1, Buttons::SnakeSpeed + Buttons::Normal);
+				break;
+			case 2:
+				settingsMenu.ChangeButton(1, Buttons::SnakeSpeed + Buttons::Fast);
+				break;
+			}
+			break;
+		case 2:
+			settingsMenu.SetCurrButton(0);
+			state = State::Menu;
 			break;
 		default:
 			break;
@@ -114,7 +175,7 @@ void Game::PauseMenu()
 
 	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
-		switch (pauseMenu.PressedButtonIndex())
+		switch (pauseMenu.CurrentButtonIndex())
 		{
 		case 0:
 			OnGameResume();
@@ -152,7 +213,7 @@ void Game::DeathMenu()
 
 	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
-		switch (deathMenu.PressedButtonIndex())
+		switch (deathMenu.CurrentButtonIndex())
 		{
 		case 0:
 			Reset();
@@ -214,9 +275,9 @@ void Game::Loop()
 		state = State::Pause;
 	}
 	
-	if (time > movePeriod)
+	if (time > settings.GetMovePeriod())
 	{
-		time -= movePeriod;
+		time -= settings.GetMovePeriod();
 
 		switch (snake.Move())
 		{
@@ -240,6 +301,9 @@ void Game::BeginFrame()
 	{
 	case State::Menu:
 		mainMenu.Clear();
+		break;
+	case State::Settings:
+		settingsMenu.Clear();
 		break;
 	case State::Play:
 		if (snake.PosUpdated())
@@ -267,6 +331,10 @@ void Game::DrawFrame()
 		mainMenu.WriteCentered(mainMenu.GetLowerLine() + 3, u8"Use W/S|Up/Down to choose, and F|Enter to select");
 		mainMenu.WriteCentered(mainMenu.GetUpperLine() - 3, u8"SNAKE GAME", Color::Green);
 		mainMenu.DrawButtons();
+		break;
+	case State::Settings:
+		settingsMenu.WriteCentered(settingsMenu.GetUpperLine() - 3, u8"SETTINGS");
+		settingsMenu.DrawButtons();
 		break;
 	case State::Play:
 		field.Draw();

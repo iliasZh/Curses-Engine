@@ -7,6 +7,7 @@
 #include "Sidebar.h"
 #include "Keyboard.h"
 #include "Buttons.h"
+#include "Settings.h"
 
 class Game
 {
@@ -17,6 +18,7 @@ public:
 	enum class State
 	{
 		Menu,
+		Settings,
 		Play,
 		Pause,
 		Dead,
@@ -32,6 +34,7 @@ public:
 	void Update();
 	void Reset();
 	void MainMenu();
+	void SettingsMenu();
 	void DeathMenu();
 	void PauseMenu();
 	void OnGameResume();
@@ -55,7 +58,8 @@ private:
 	UIWindow mainMenu;
 	UIWindow deathMenu;
 	UIWindow pauseMenu;
-	float movePeriod = 0.10f;
+	UIWindow settingsMenu;
+	Settings settings;
 	float time = 0.0f;
 	//----------------USER-DEFINED-VARIABLES----------------
 };

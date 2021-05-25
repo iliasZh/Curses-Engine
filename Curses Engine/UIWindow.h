@@ -109,7 +109,7 @@ public:
 		}
 	}
 	void SetWrappingMode(bool wrap) { bWrapping = wrap; }
-	int PressedButtonIndex()
+	int CurrentButtonIndex()
 	{
 		return currButton;
 	}
