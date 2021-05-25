@@ -8,9 +8,8 @@ public:
 	bool GetWrappingMode() const { return wrapAround; }
 	void ToggleWrappingMode() { wrapAround = true xor wrapAround; }
 	void SetWrappingMode(bool mode) { wrapAround = mode; }
-	void IncreaseSnakeSpeed() { if (++snakeSpeedMode == 3) snakeSpeedMode = 2; }
-	void DecreaseSnakeSpeed() { if (--snakeSpeedMode == -1) snakeSpeedMode = 0; }
-	void ToggleSnakeSpeed() { if (++snakeSpeedMode == 3) snakeSpeedMode = 0; }
+	void ToggleSnakeSpeedBwd() { if (--snakeSpeedMode == -1) snakeSpeedMode = 2; }
+	void ToggleSnakeSpeedFwd() { if (++snakeSpeedMode == 3) snakeSpeedMode = 0; }
 private:
 	const float movePeriods[3] = { 0.12f, 0.10f, 0.08f };
 	int snakeSpeedMode = 1;

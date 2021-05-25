@@ -138,7 +138,7 @@ void Game::SettingsMenu()
 				settingsMenu.ChangeButton(0, Buttons::WrapSettingOff);
 			break;
 		case 1:
-			settings.ToggleSnakeSpeed();
+			settings.ToggleSnakeSpeedFwd();
 			switch (settings.GetSnakeSpeedMode())
 			{
 			case 0:
@@ -155,6 +155,43 @@ void Game::SettingsMenu()
 		case 2:
 			settingsMenu.SetCurrButton(0);
 			state = State::Menu;
+			break;
+		default:
+			break;
+		}
+	}
+
+	bool lPress = kbd.IsBindingPressedOnce(Controls::Left);
+	bool rPress = kbd.IsBindingPressedOnce(Controls::Right);
+	if (lPress || rPress)
+	{
+		switch (settingsMenu.CurrentButtonIndex())
+		{
+		case 0:
+			settings.ToggleWrappingMode();
+			if (settings.GetWrappingMode())
+				settingsMenu.ChangeButton(0, Buttons::WrapSettingOn);
+			else
+				settingsMenu.ChangeButton(0, Buttons::WrapSettingOff);
+			break;
+		case 1:
+			if (lPress)
+				settings.ToggleSnakeSpeedBwd();
+			else if (rPress)
+				settings.ToggleSnakeSpeedFwd();
+
+			switch (settings.GetSnakeSpeedMode())
+			{
+			case 0:
+				settingsMenu.ChangeButton(1, Buttons::SnakeSpeed + Buttons::Slow);
+				break;
+			case 1:
+				settingsMenu.ChangeButton(1, Buttons::SnakeSpeed + Buttons::Normal);
+				break;
+			case 2:
+				settingsMenu.ChangeButton(1, Buttons::SnakeSpeed + Buttons::Fast);
+				break;
+			}
 			break;
 		default:
 			break;
@@ -328,12 +365,15 @@ void Game::DrawFrame()
 	switch (state)
 	{
 	case State::Menu:
-		mainMenu.WriteCentered(mainMenu.GetLowerLine() + 3, u8"Use W/S|Up/Down to choose, and F|Enter to select");
+		mainMenu.WriteCentered(mainMenu.GetLowerLine() + 3,
+			u8"Use W/S|Up/Down to navigate, and F|Enter to select");
 		mainMenu.WriteCentered(mainMenu.GetUpperLine() - 3, u8"SNAKE GAME", Color::Green);
 		mainMenu.DrawButtons();
 		break;
 	case State::Settings:
-		settingsMenu.WriteCentered(settingsMenu.GetUpperLine() - 3, u8"SETTINGS");
+		settingsMenu.WriteCentered(settingsMenu.GetLowerLine() + 3,
+			u8"Use WASD|arrows to navigate and select options");
+		settingsMenu.WriteCentered(settingsMenu.GetUpperLine() - 3, u8"SETTINGS", Color::Green);
 		settingsMenu.DrawButtons();
 		break;
 	case State::Play:
