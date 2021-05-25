@@ -90,14 +90,25 @@ public:
 	{
 		assert(!buttons.empty());
 		if (++currButton == (int)buttons.size())
-			currButton = 0;
+		{
+			if (bWrapping)
+				currButton = 0;
+			else
+				currButton = (int)buttons.size() - 1;
+		}
 	}
 	void OnButtonPrev()
 	{
 		assert(!buttons.empty());
 		if (--currButton == -1)
-			currButton = (int)buttons.size() - 1;
+		{
+			if (bWrapping)
+				currButton = (int)buttons.size() - 1;
+			else
+				currButton = 0;
+		}
 	}
+	void SetWrappingMode(bool wrap) { bWrapping = wrap; }
 	int OnButtonPress()
 	{
 		return currButton;
@@ -111,4 +122,5 @@ private:
 	Color buttonText = Color::Black;
 	Color buttonHighlight = Color::Green;
 	Color buttonBase = Color::Cyan;
+	bool bWrapping = false;
 };
