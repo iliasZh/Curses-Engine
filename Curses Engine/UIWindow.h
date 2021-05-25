@@ -118,6 +118,12 @@ public:
 		assert(spacing >= 0);
 		buttonSpacing = spacing;
 	}
+	void SetCurrButton(int pos)
+	{
+		assert(!buttons.empty());
+		assert(pos >= 0 && pos < (int)buttons.size());
+		currButton = 0;
+	}
 private:
 	std::vector<std::u8string> buttons;
 	int buttonsStartLine = 2;				// starting line for buttons

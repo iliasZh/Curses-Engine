@@ -6,6 +6,7 @@
 #include "Field.h"
 #include "Sidebar.h"
 #include "Keyboard.h"
+#include "Buttons.h"
 
 class Game
 {
@@ -29,6 +30,7 @@ public:
 	Game& operator=(Game&&)			= delete;
 	bool Go();
 	void Update();
+	void Reset();
 	void MainMenu();
 	void DeathMenu();
 	void PauseMenu();

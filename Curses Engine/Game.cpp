@@ -18,21 +18,21 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 	cs.SetEchoMode(false);
 
-	deathMenu.AddButton(u8"TRY AGAIN");
-	deathMenu.AddButton(u8"QUIT");
+	deathMenu.AddButton(Buttons::TryAgain);
+	deathMenu.AddButton(Buttons::Quit);
 	deathMenu.Center();
 	deathMenu.ShiftStartLine(1);
 
 	pauseMenu.SetButtonSpacing(0);
-	pauseMenu.AddButton(u8"CONTINUE");
-	pauseMenu.AddButton(u8"RESTART");
-	pauseMenu.AddButton(u8"MAIN MENU");
-	pauseMenu.AddButton(u8"QUIT");
+	pauseMenu.AddButton(Buttons::Continue);
+	pauseMenu.AddButton(Buttons::Restart);
+	pauseMenu.AddButton(Buttons::MainMenu);
+	pauseMenu.AddButton(Buttons::Quit);
 	pauseMenu.Center();
 	pauseMenu.ShiftStartLine(1);
 
-	mainMenu.AddButton(u8"PLAY");
-	mainMenu.AddButton(u8"QUIT");
+	mainMenu.AddButton(Buttons::Play);
+	mainMenu.AddButton(Buttons::Quit);
 	mainMenu.Center();
 	mainMenu.DrawButtons();
 
@@ -68,6 +68,12 @@ void Game::Update()
 	}
 }
 
+void Game::Reset()
+{
+	sidebar.ResetScore();
+	field.Reset();
+}
+
 void Game::MainMenu()
 {
 	if (kbd.IsBindingPressedOnce(Controls::Up))
@@ -79,7 +85,7 @@ void Game::MainMenu()
 		mainMenu.OnButtonNext();
 	}
 
-	if (kbd.IsBindingPressed(Controls::Select))
+	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
 		switch (mainMenu.OnButtonPress())
 		{
@@ -107,7 +113,7 @@ void Game::PauseMenu()
 		pauseMenu.OnButtonNext();
 	}
 
-	if (kbd.IsBindingPressed(Controls::Select))
+	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
 		switch (pauseMenu.OnButtonPress())
 		{
@@ -115,12 +121,22 @@ void Game::PauseMenu()
 			OnGameResume();
 			state = State::Play;
 			break;
+		case 1:
+			Reset();
+			OnGameResume();
+			state = State::Play;
+			break;
+		case 2:
+			Reset();
+			state = State::Menu;
+			break;
 		case 3:
 			state = State::Quit;
 			break;
 		default:
 			break;
 		}
+		pauseMenu.SetCurrButton(0);
 	}
 }
 
@@ -135,13 +151,12 @@ void Game::DeathMenu()
 		deathMenu.OnButtonNext();
 	}
 
-	if (kbd.IsBindingPressed(Controls::Select))
+	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
 		switch (deathMenu.OnButtonPress())
 		{
 		case 0:
-			sidebar.ResetScore();
-			field.Reset();
+			Reset();
 			OnGameResume();
 			state = State::Play;
 			break;

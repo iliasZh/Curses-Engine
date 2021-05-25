@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Buttons.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Controls.h" />
     <ClInclude Include="CursesWindow.h" />
