@@ -78,6 +78,7 @@ namespace curses
 		void SetEchoMode(bool enable);
 		bool IsEchoEnabled() { return echoEnabled; }
 		bool HasColors() { return has_colors(); }
+		void Refresh() { refresh(); }
 
 		static bool IsInitialized() { return (instances == 1); }
 		static chtype GetColorPair(Color f, Color b);

@@ -86,7 +86,7 @@ void Game::MainMenu()
 
 	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
-		switch (mainMenu.OnButtonPress())
+		switch (mainMenu.PressedButtonIndex())
 		{
 		case 0:
 			OnGameResume();
@@ -114,7 +114,7 @@ void Game::PauseMenu()
 
 	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
-		switch (pauseMenu.OnButtonPress())
+		switch (pauseMenu.PressedButtonIndex())
 		{
 		case 0:
 			OnGameResume();
@@ -152,7 +152,7 @@ void Game::DeathMenu()
 
 	if (kbd.IsBindingPressedOnce(Controls::Select))
 	{
-		switch (deathMenu.OnButtonPress())
+		switch (deathMenu.PressedButtonIndex())
 		{
 		case 0:
 			Reset();
