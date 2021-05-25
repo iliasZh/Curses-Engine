@@ -48,11 +48,17 @@ public:
 	public:
 		Snake(Field& field, std::vector<Fruit>& fruits);
 
-		void OnKeyPress(int vkCode);
+		void OnInputUp();
+		void OnInputDown();
+		void OnInputLeft();
+		void OnInputRight();
+
 		Event Move();
 		void Draw();
 		void Pop();
 		
+		void SetWrappingMode(bool bWrap) { bWrapAround = bWrap; }
+
 		void Reset();
 
 		bool PosUpdated() const { return posUpdated; }
@@ -68,6 +74,7 @@ public:
 		const Color headColor = Color::Yellow;
 		const Color bodyColor = Color::Green;
 		bool posUpdated = true;
+		bool bWrapAround = false;
 		std::vector<Coord> segments;
 	};
 	

@@ -86,29 +86,28 @@ Field::Snake::Snake(Field& field, std::vector<Fruit>& fruits)
 	}
 }
 
-void Field::Snake::OnKeyPress(int vkCode)
+void Field::Snake::OnInputUp()
 {
-	switch (vkCode)
-	{
-	case 'W':
-		if (drawnDir != Coord{ 0, 1 })
-			dir = Coord{ 0, -1 };
-		break;
-	case 'S':
-		if (drawnDir != Coord{ 0, -1 })
-			dir = Coord{ 0, 1 };
-		break;
-	case 'A':
-		if (drawnDir != Coord{ 1, 0 })
-			dir = Coord{ -1, 0 };
-		break;
-	case 'D':
-		if (drawnDir != Coord{ -1, 0 })
-			dir = Coord{ 1, 0 };
-		break;
-	default:
-		break;
-	}
+	if (drawnDir != Coord{ 0, 1 })
+		dir = Coord{ 0, -1 };
+}
+
+void Field::Snake::OnInputDown()
+{
+	if (drawnDir != Coord{ 0, -1 })
+		dir = Coord{ 0, 1 };
+}
+
+void Field::Snake::OnInputLeft()
+{
+	if (drawnDir != Coord{ 1, 0 })
+		dir = Coord{ -1, 0 };
+}
+
+void Field::Snake::OnInputRight()
+{
+	if (drawnDir != Coord{ -1, 0 })
+		dir = Coord{ 1, 0 };
 }
 
 Field::Snake::Event Field::Snake::Move()
@@ -117,12 +116,32 @@ Field::Snake::Event Field::Snake::Move()
 	Coord nextHeadLoc = segments[0] + dir;
 	for (int i = 3; i < segments.size() - 1; ++i)
 	{
-		if (nextHeadLoc == segments[i] ||
-			nextHeadLoc.x < 0 || !(nextHeadLoc.x < fieldWidth) ||
-			nextHeadLoc.y < 0 || !(nextHeadLoc.y < fieldHeight))
+		if (nextHeadLoc == segments[i])
 		{
 			return Event::Collision;
 		}
+
+		if (bWrapAround)
+		{
+			if (nextHeadLoc.x < 0)
+				nextHeadLoc.x = fieldWidth - 1;
+			else if (!(nextHeadLoc.x < fieldWidth))
+				nextHeadLoc.x = 0;
+
+			if (nextHeadLoc.y < 0)
+				nextHeadLoc.y = fieldHeight - 1;
+			else if (!(nextHeadLoc.y < fieldHeight))
+				nextHeadLoc.y = 0;
+		}
+		else
+		{
+			if (nextHeadLoc.x < 0 || !(nextHeadLoc.x < fieldWidth) ||
+				nextHeadLoc.y < 0 || !(nextHeadLoc.y < fieldHeight))
+			{
+				return Event::Collision;
+			}
+		}
+			
 	}
 
 	// check for collisions with fruit
@@ -146,7 +165,7 @@ Field::Snake::Event Field::Snake::Move()
 	{
 		*rit = *(rit + 1);
 	}
-	segments[0] += dir;
+	segments[0] = nextHeadLoc;
 
 	// grow if needed
 	if (grow) segments.emplace_back(last);

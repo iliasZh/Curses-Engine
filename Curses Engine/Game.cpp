@@ -35,7 +35,6 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	mainMenu.AddButton(Buttons::Quit);
 	mainMenu.Center();
 	mainMenu.DrawButtons();
-
 }
 
 bool Game::Go()
@@ -194,20 +193,20 @@ void Game::Loop()
 
 	if (kbd.IsBindingPressed(Controls::Up))
 	{
-		snake.OnKeyPress('W');
+		snake.OnInputUp();
 	}
 	else if (kbd.IsBindingPressed(Controls::Down))
 	{
-		snake.OnKeyPress('S');
+		snake.OnInputDown();
 	}
 
 	if (kbd.IsBindingPressed(Controls::Left))
 	{
-		snake.OnKeyPress('A');
+		snake.OnInputLeft();
 	}
 	else if (kbd.IsBindingPressed(Controls::Right))
 	{
-		snake.OnKeyPress('D');
+		snake.OnInputRight();
 	}
 
 	if (kbd.IsBindingPressed(Controls::Back))
