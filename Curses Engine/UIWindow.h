@@ -59,7 +59,7 @@ public:
 				else
 				{
 					std::u8string text = marginL + u8'>' + buttons[i] + u8'<' + marginR;
-					WriteCentered(currLine, text, buttonText, buttonHighlight);
+					WriteCentered(currLine, text, buttonTextHighlight, buttonHighlight);
 				}
 			}
 		}
@@ -131,6 +131,7 @@ private:
 	int currButton = -1;
 	int buttonMargin = 2;
 	Color buttonText = Color::Black;
+	Color buttonTextHighlight = Color::White;
 	Color buttonHighlight = Color::Green;
 	Color buttonBase = Color::Cyan;
 	bool bWrapping = false;

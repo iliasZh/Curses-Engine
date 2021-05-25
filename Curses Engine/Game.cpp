@@ -8,8 +8,8 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
 	, mainMenu{ 0, 0, console.width, console.height }
-	, deathMenu{ 32, 12, 15, 6 }
-	, pauseMenu{ 31, 12, 17, 7 }
+	, deathMenu{ 32, 12, 15, 7 }
+	, pauseMenu{ 32, 12, 15, 7 }
 {
 	assert(++instances == 1);
 
@@ -19,6 +19,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	cs.SetEchoMode(false);
 
 	deathMenu.AddButton(Buttons::TryAgain);
+	deathMenu.AddButton(Buttons::MainMenu);
 	deathMenu.AddButton(Buttons::Quit);
 	deathMenu.Center();
 	deathMenu.ShiftStartLine(1);
@@ -160,11 +161,16 @@ void Game::DeathMenu()
 			state = State::Play;
 			break;
 		case 1:
+			Reset();
+			state = State::Menu;
+			break;
+		case 2:
 			state = State::Quit;
 			break;
 		default:
 			break;
 		}
+		deathMenu.SetCurrButton(0);
 	}
 }
 
@@ -268,7 +274,7 @@ void Game::DrawFrame()
 		break;
 	case State::Dead:
 		deathMenu.DrawBox(Color::Red);
-		deathMenu.WriteCentered(deathMenu.GetUpperLine() - 2, u8"YOU DIED", Color::Red);
+		deathMenu.WriteCentered(deathMenu.GetUpperLine() - 2, u8"YOU DIED!", Color::Red);
 		deathMenu.DrawButtons();
 		break;
 	case State::Pause:
