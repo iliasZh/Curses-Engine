@@ -127,7 +127,7 @@ public:
 private:
 	std::vector<std::u8string> buttons;
 	int buttonsStartLine = 2;				// starting line for buttons
-	int buttonSpacing = 1;					// lines in between buttons
+	int buttonSpacing = 0;					// lines in between buttons
 	int currButton = -1;
 	int buttonMargin = 2;
 	Color buttonText = Color::Black;

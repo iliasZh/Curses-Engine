@@ -8,7 +8,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
 	, mainMenu{ 0, 0, console.width, console.height }
-	, deathMenu{ 32, 12, 15, 7 }
+	, deathMenu{ 32, 12, 15, 6 }
 	, pauseMenu{ 31, 12, 17, 7 }
 {
 	assert(++instances == 1);
@@ -23,7 +23,6 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	deathMenu.Center();
 	deathMenu.ShiftStartLine(1);
 
-	pauseMenu.SetButtonSpacing(0);
 	pauseMenu.AddButton(Buttons::Continue);
 	pauseMenu.AddButton(Buttons::Restart);
 	pauseMenu.AddButton(Buttons::MainMenu);
