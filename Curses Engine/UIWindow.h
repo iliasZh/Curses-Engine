@@ -113,6 +113,11 @@ public:
 	{
 		return currButton;
 	}
+	void SetButtonSpacing(int spacing)
+	{
+		assert(spacing >= 0);
+		buttonSpacing = spacing;
+	}
 private:
 	std::vector<std::u8string> buttons;
 	int buttonsStartLine = 2;				// starting line for buttons

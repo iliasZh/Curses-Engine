@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Console.h" />
+    <ClInclude Include="Controls.h" />
     <ClInclude Include="CursesWindow.h" />
     <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="Game.h" />

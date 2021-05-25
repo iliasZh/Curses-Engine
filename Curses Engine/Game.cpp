@@ -7,8 +7,9 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, snake{ field.snake }
 	, fieldBorder{ 0, 0, 80, 30 }
 	, sidebar{ 80, 0, 40, 30 }
-	, menu{ 0, 0, console.width, console.height }
+	, mainMenu{ 0, 0, console.width, console.height }
 	, deathMenu{ 32, 12, 15, 7 }
+	, pauseMenu{ 31, 12, 17, 7 }
 {
 	assert(++instances == 1);
 
@@ -22,10 +23,19 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	deathMenu.Center();
 	deathMenu.ShiftStartLine(1);
 
-	menu.AddButton(u8"PLAY");
-	menu.AddButton(u8"QUIT");
-	menu.Center();
-	menu.DrawButtons();
+	pauseMenu.SetButtonSpacing(0);
+	pauseMenu.AddButton(u8"CONTINUE");
+	pauseMenu.AddButton(u8"RESTART");
+	pauseMenu.AddButton(u8"MAIN MENU");
+	pauseMenu.AddButton(u8"QUIT");
+	pauseMenu.Center();
+	pauseMenu.ShiftStartLine(1);
+
+	mainMenu.AddButton(u8"PLAY");
+	mainMenu.AddButton(u8"QUIT");
+	mainMenu.Center();
+	mainMenu.DrawButtons();
+
 }
 
 bool Game::Go()
@@ -42,7 +52,7 @@ void Game::Update()
 	switch (state)
 	{
 	case State::Menu:
-		Menu();
+		MainMenu();
 		break;
 	case State::Play:
 		Loop();
@@ -50,44 +60,65 @@ void Game::Update()
 	case State::Dead:
 		DeathMenu();
 		break;
+	case State::Pause:
+		PauseMenu();
+		break;
 	default:
 		break;
 	}
 }
 
-void Game::Menu()
+void Game::MainMenu()
 {
-	if (GetKeyState('W') < 0)
+	if (kbd.IsBindingPressedOnce(Controls::Up))
 	{
-		if (!isPressed)
-		{
-			menu.OnButtonPrev();
-			isPressed = true;
-		}
+		mainMenu.OnButtonPrev();
 	}
-	else if (GetKeyState('S') < 0)
+	else if (kbd.IsBindingPressedOnce(Controls::Down))
 	{
-		if (!isPressed)
-		{
-			menu.OnButtonNext();
-			isPressed = true;
-		}
-	}
-	else
-	{
-		isPressed = false;
+		mainMenu.OnButtonNext();
 	}
 
-	if (GetKeyState('F') < 0)
+	if (kbd.IsBindingPressed(Controls::Select))
 	{
-		switch (menu.OnButtonPress())
+		switch (mainMenu.OnButtonPress())
 		{
 		case 0:
-			state = State::Play;
 			OnGameResume();
+			state = State::Play;
 			break;
 		case 1:
 			state = State::Quit;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void Game::PauseMenu()
+{
+	if (kbd.IsBindingPressedOnce(Controls::Up))
+	{
+		pauseMenu.OnButtonPrev();
+	}
+	else if (kbd.IsBindingPressedOnce(Controls::Down))
+	{
+		pauseMenu.OnButtonNext();
+	}
+
+	if (kbd.IsBindingPressed(Controls::Select))
+	{
+		switch (pauseMenu.OnButtonPress())
+		{
+		case 0:
+			OnGameResume();
+			state = State::Play;
+			break;
+		case 3:
+			state = State::Quit;
+			break;
+		default:
 			break;
 		}
 	}
@@ -95,28 +126,16 @@ void Game::Menu()
 
 void Game::DeathMenu()
 {
-	if (GetKeyState('W') < 0)
+	if (kbd.IsBindingPressedOnce(Controls::Up))
 	{
-		if (!isPressed)
-		{
-			deathMenu.OnButtonPrev();
-			isPressed = true;
-		}
+		deathMenu.OnButtonPrev();
 	}
-	else if (GetKeyState('S') < 0)
+	else if (kbd.IsBindingPressedOnce(Controls::Down))
 	{
-		if (!isPressed)
-		{
-			deathMenu.OnButtonNext();
-			isPressed = true;
-		}
-	}
-	else
-	{
-		isPressed = false;
+		deathMenu.OnButtonNext();
 	}
 
-	if (GetKeyState('F') < 0)
+	if (kbd.IsBindingPressed(Controls::Select))
 	{
 		switch (deathMenu.OnButtonPress())
 		{
@@ -128,6 +147,8 @@ void Game::DeathMenu()
 			break;
 		case 1:
 			state = State::Quit;
+			break;
+		default:
 			break;
 		}
 	}
@@ -151,27 +172,27 @@ void Game::Loop()
 {
 	time += timer.Mark();
 
-	if (GetKeyState('W') < 0)
+	if (kbd.IsBindingPressed(Controls::Up))
 	{
 		snake.OnKeyPress('W');
 	}
-	else if (GetKeyState('S') < 0)
+	else if (kbd.IsBindingPressed(Controls::Down))
 	{
 		snake.OnKeyPress('S');
 	}
-	if (GetKeyState('A') < 0)
+
+	if (kbd.IsBindingPressed(Controls::Left))
 	{
 		snake.OnKeyPress('A');
 	}
-	else if (GetKeyState('D') < 0)
+	else if (kbd.IsBindingPressed(Controls::Right))
 	{
 		snake.OnKeyPress('D');
 	}
 
-	if (GetKeyState(VK_ESCAPE) < 0)
+	if (kbd.IsBindingPressed(Controls::Back))
 	{
-		menu.ChangeButton(0, u8"CONTINUE");
-		state = State::Menu;
+		state = State::Pause;
 	}
 	
 	if (time > movePeriod)
@@ -199,7 +220,7 @@ void Game::BeginFrame()
 	switch (state)
 	{
 	case State::Menu:
-		menu.Clear();
+		mainMenu.Clear();
 		break;
 	case State::Play:
 		if (snake.PosUpdated())
@@ -209,6 +230,9 @@ void Game::BeginFrame()
 		break;
 	case State::Dead:
 		deathMenu.Clear();
+		break;
+	case State::Pause:
+		pauseMenu.Clear();
 		break;
 	default:
 		break;
@@ -221,9 +245,9 @@ void Game::DrawFrame()
 	switch (state)
 	{
 	case State::Menu:
-		menu.WriteCentered(menu.GetLowerLine() + 3, u8"Use W/S to choose, and F to select");
-		menu.WriteCentered(menu.GetUpperLine() - 3, u8"SNAKE GAME", Color::Green);
-		menu.DrawButtons();
+		mainMenu.WriteCentered(mainMenu.GetLowerLine() + 3, u8"Use W/S|Up/Down to choose, and F|Enter to select");
+		mainMenu.WriteCentered(mainMenu.GetUpperLine() - 3, u8"SNAKE GAME", Color::Green);
+		mainMenu.DrawButtons();
 		break;
 	case State::Play:
 		field.Draw();
@@ -232,6 +256,11 @@ void Game::DrawFrame()
 		deathMenu.DrawBox(Color::Red);
 		deathMenu.WriteCentered(deathMenu.GetUpperLine() - 2, u8"YOU DIED", Color::Red);
 		deathMenu.DrawButtons();
+		break;
+	case State::Pause:
+		pauseMenu.DrawBox(Color::Green);
+		pauseMenu.WriteCentered(pauseMenu.GetUpperLine() - 1, u8"PAUSED", Color::Yellow);
+		pauseMenu.DrawButtons();
 		break;
 	default:
 		break;
