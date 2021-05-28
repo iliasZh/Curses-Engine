@@ -4,6 +4,9 @@ Field::Field(int startX, int startY, int widthConPx, int heightConPx)
 	: Curses::Window{ startX, startY, widthConPx * 2, heightConPx }
 	, snake{ *this, fruits }
 {
+	rng.AddDist(0, WidthConPx() - 1);
+	rng.AddDist(0, HeightConPx() - 1);
+
 	for (int i = 0; i < nFruits; ++i)
 	{
 		fruits.emplace_back(*this, snake.GetBody(), fruits);
@@ -39,10 +42,9 @@ Field::Fruit::Fruit(Field& field, const std::vector<Coord>& snake, const std::ve
 	: field{ field }
 {
 	Coord candidate;
-	srand((unsigned)time(NULL));
 	do
 	{
-		candidate = { rand() % field.WidthConPx(), rand() % field.HeightConPx() };
+		candidate = { Field::rng.Get(0), Field::rng.Get(1) };
 	} 	while (IsColliding(candidate, snake, fruits));
 
 	pos = candidate;

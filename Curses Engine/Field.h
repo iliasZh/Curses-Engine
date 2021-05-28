@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include "RNG.h"
 
 class Field : public curses::Curses::Window
 {
@@ -105,4 +106,5 @@ public:
 	Snake snake;
 	std::vector<Fruit> fruits{};
 	const int nFruits = 3;
+	inline static RNG rng{};
 };

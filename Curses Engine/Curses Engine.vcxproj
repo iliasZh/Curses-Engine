@@ -167,6 +167,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="IliasWin.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="RNG.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Sidebar.h" />
     <ClInclude Include="UIWindow.h" />
