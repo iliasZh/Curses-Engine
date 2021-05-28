@@ -10,7 +10,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	, mainMenu{ 0, 0, console.width, console.height }
 	, settingsMenu{ 0, 0, console.width, console.height }
 	, deathMenu{ 32, 12, 15, 7 }
-	, pauseMenu{ 32, 12, 15, 7 }
+	, pauseMenu{ 32, 11, 15, 8 }
 {
 	assert(++instances == 1);
 
@@ -28,9 +28,10 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	pauseMenu.AddButton(Buttons::Continue);
 	pauseMenu.AddButton(Buttons::Restart);
 	pauseMenu.AddButton(Buttons::MainMenu);
+	pauseMenu.AddButton(Buttons::Settings);
 	pauseMenu.AddButton(Buttons::Quit);
 	pauseMenu.Center();
-	pauseMenu.ShiftStartLine(1);
+	//pauseMenu.ShiftStartLine(1);
 
 	settingsMenu.AddButton(Buttons::WrapSettingOn);
 	settingsMenu.AddButton(Buttons::SnakeSpeed + Buttons::Normal);
@@ -100,10 +101,10 @@ void Game::MainMenu()
 		{
 		case 0:
 			OnGameResume();
-			snake.SetWrappingMode(settings.GetWrappingMode());
 			state = State::Play;
 			break;
 		case 1:
+			isFromMainMenu = true;
 			state = State::Settings;
 			break;
 		case 2:
@@ -132,6 +133,7 @@ void Game::SettingsMenu()
 		{
 		case 0:
 			settings.ToggleWrappingMode();
+			snake.SetWrappingMode(settings.GetWrappingMode());
 			if (settings.GetWrappingMode())
 				settingsMenu.ChangeButton(0, Buttons::WrapSettingOn);
 			else
@@ -154,7 +156,13 @@ void Game::SettingsMenu()
 			break;
 		case 2:
 			settingsMenu.SetCurrButton(0);
-			state = State::Menu;
+			if (isFromMainMenu)
+				state = State::Menu;
+			else
+			{
+				OnGameResume();
+				state = State::Play;
+			}
 			break;
 		default:
 			break;
@@ -228,6 +236,10 @@ void Game::PauseMenu()
 			state = State::Menu;
 			break;
 		case 3:
+			isFromMainMenu = false;
+			state = State::Settings;
+			break;
+		case 4:
 			state = State::Quit;
 			break;
 		default:

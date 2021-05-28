@@ -61,5 +61,6 @@ private:
 	UIWindow settingsMenu;
 	Settings settings;
 	float time = 0.0f;
+	bool isFromMainMenu = true;
 	//----------------USER-DEFINED-VARIABLES----------------
 };
