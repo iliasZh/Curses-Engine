@@ -224,5 +224,3 @@ void Field::Snake::Reset()
 
 	posUpdated = true;
 }
-
-

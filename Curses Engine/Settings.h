@@ -13,5 +13,5 @@ public:
 private:
 	const float movePeriods[3] = { 0.12f, 0.10f, 0.08f };
 	int snakeSpeedMode = 1;
-	bool wrapAround = true;
+	bool wrapAround = false;
 };

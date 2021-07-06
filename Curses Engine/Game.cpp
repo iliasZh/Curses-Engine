@@ -33,7 +33,7 @@ Game::Game(unsigned fontWidthPx, std::wstring title)
 	pauseMenu.Center();
 	//pauseMenu.ShiftStartLine(1);
 
-	settingsMenu.AddButton(Buttons::WrapSettingOn);
+	settingsMenu.AddButton(Buttons::WrapSettingOff);
 	settingsMenu.AddButton(Buttons::SnakeSpeed + Buttons::Normal);
 	settingsMenu.AddButton(Buttons::Back);
 	settingsMenu.Center();
@@ -177,6 +177,7 @@ void Game::SettingsMenu()
 		{
 		case 0:
 			settings.ToggleWrappingMode();
+			snake.SetWrappingMode(settings.GetWrappingMode());
 			if (settings.GetWrappingMode())
 				settingsMenu.ChangeButton(0, Buttons::WrapSettingOn);
 			else
