@@ -2,6 +2,7 @@
 
 #include "ConsoleWrapper.h"
 #include "CursesWrapper.h"
+#include "Keyboard.h"
 
 class Game
 {
@@ -18,4 +19,5 @@ public:
 private:
 	Console console;
 	Curses curses;
+	Keyboard kbd;
 };
