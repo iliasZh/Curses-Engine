@@ -9,7 +9,7 @@ class Game
 public:
 	Game()	= default;
 	~Game()	= default;
-	Game(Console::scrpx_count fontWidth, std::wstring title);
+	Game(Console::scrpx_count fontWidth, std::wstring_view title);
 	Game(const Game&)				= delete;
 	Game& operator=(const Game&)	= delete;
 

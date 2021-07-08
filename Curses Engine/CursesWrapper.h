@@ -59,8 +59,8 @@ public:
 	class Exception : public ExceptionBase
 	{
 	public:
-		Exception(std::string funcName, std::string errorDesc,
-			std::string fileName, int line) noexcept
+		Exception(std::string_view funcName, std::string_view errorDesc,
+			std::string_view fileName, int line) noexcept
 			: ExceptionBase{ funcName, errorDesc, fileName, line }
 		{
 			errorType = "Curses error";

@@ -12,18 +12,16 @@ public:
 	typedef uint16_t scrpx_count;	// represents amount of actual screen pixels
 	typedef uint16_t char_count;	// represents amount of characters
 
-	Console(scrpx_count fontWidthPx = 15u, std::wstring title = L"Curses Engine");
-	Console(const Console&) = delete;
-	Console(Console&&) = delete;
-	Console& operator=(const Console&) = delete;
-	Console& operator=(Console&&) = delete;
+	Console(scrpx_count fontWidthPx = 15u, std::wstring_view title = L"Curses Engine");
+	Console(const Console&)				= delete;
+	Console& operator=(const Console&)	= delete;
 	~Console() {}
 public:
 	class Exception : public ExceptionBase
 	{
 	public:
-		Exception(std::string funcName, std::string errorDesc,
-			std::string fileName, int line) noexcept
+		Exception(std::string_view funcName, std::string_view errorDesc,
+			std::string_view fileName, int line) noexcept
 			: ExceptionBase{ funcName, errorDesc, fileName, line }
 		{
 			errorType = "Console error";

@@ -1,7 +1,7 @@
 #include "ConsoleWrapper.h"
 #include <cassert>
 
-Console::Console(scrpx_count fontWidth, std::wstring title)
+Console::Console(scrpx_count fontWidth, std::wstring_view title)
 	: consoleHandle{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, fontWidth{ fontWidth }
 	, title{ title }
@@ -22,7 +22,7 @@ Console::Console(scrpx_count fontWidth, std::wstring title)
 		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
 	}
 
-	SetConsoleTitle(title.c_str()); // set requested title
+	SetConsoleTitle(this->title.c_str()); // set requested title
 	// title setup END
 
 

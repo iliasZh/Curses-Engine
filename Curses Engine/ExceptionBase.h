@@ -6,8 +6,8 @@
 class ExceptionBase : public std::exception
 {
 public:
-	ExceptionBase(std::string funcName, std::string errorDesc,
-		std::string fileName, int line) noexcept
+	ExceptionBase(std::string_view funcName, std::string_view errorDesc,
+		std::string_view fileName, int line) noexcept
 		: funcName{ funcName }
 		, errorDesc{ errorDesc }
 		, fileName{ fileName }
@@ -25,14 +25,14 @@ public:
 	}
 	const char* ErrorType() const noexcept
 	{
-		return errorType.c_str();
+		return errorType.data();
 	}
 protected:
-	std::string errorType;
+	std::string_view errorType;		// IMPORTANT: ALL STRING_VIEWs MUST BE NULL TERMINATED
 private:
-	std::string funcName;
-	std::string errorDesc;
-	std::string fileName;
+	std::string_view funcName;		// IMPORTANT: ALL STRING_VIEWs MUST BE NULL TERMINATED
+	std::string_view errorDesc;		// IMPORTANT: ALL STRING_VIEWs MUST BE NULL TERMINATED
+	std::string_view fileName;		// IMPORTANT: ALL STRING_VIEWs MUST BE NULL TERMINATED
 	int line;
 	mutable std::string whatBuffer;
 };

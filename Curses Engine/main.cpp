@@ -1,6 +1,5 @@
 ﻿#pragma comment(lib, "C:\\cpplibraries\\pdcurses.lib")
 
-#include "WindowsFunctionality.h"
 #include "Game.h"
 #include "RandomNumberGenerator.h"
 
@@ -9,10 +8,10 @@
 int main()
 {
 	//Game game;
-	RNG rng;
-	for (int i = 0; i < 100; ++i)
-	{
-		std::cout << rng.UniformIntDist(0, 50) << std::endl;
-	}
+	Console con;
+	Curses cs;
+	Curses::Window win{ 0,0,60,30 };
+	win.Write(0, 0, u8"TEST");
+	win.GetCh();
 	return 0;
 }
