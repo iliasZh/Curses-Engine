@@ -11,6 +11,8 @@ Curses::Window::Window(ucoord startX, ucoord startY, ucoord width, ucoord height
 {
 	assert(Curses::IsInitialized());
 	assert(width > 0 && height > 0);
+	if (startX + width > getmaxx(stdscr) || startY + height > getmaxy(stdscr))
+		THROW_CURSES_EXCEPTION("Curses Window constructor", "window out of bounds!");
 }
 
 Curses::Window::~Window()
@@ -77,7 +79,7 @@ void Curses::Window::Clear()
 
 Curses::Curses()
 {
-	assert(++instances == 1);
+	assert(++instances == 1u);
 
 	initscr();
 	SetEchoMode(echoEnabled);

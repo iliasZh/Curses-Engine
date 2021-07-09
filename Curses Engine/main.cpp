@@ -10,7 +10,7 @@ int main()
 	//Game game;
 	Console con;
 	Curses cs;
-	Curses::Window win{ 0,0,60,30 };
+	Curses::Window win{ 0,0,120,30 };
 	win.Write(0, 0, u8"TEST");
 	win.GetCh();
 	return 0;
