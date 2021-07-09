@@ -10,8 +10,10 @@ int main()
 	//Game game;
 	Console con;
 	Curses cs;
-	Curses::Window win{ 0,0,120,30 };
-	win.Write(0, 0, u8"TEST");
-	win.GetCh();
+	cs.SetCursorMode(Curses::CursorMode::Invisible);
+	cs.SetEchoMode(false);
+
+	cs.stdwin.Write(0, 0, u8"akshnfdakhfiuqh", Curses::Color::Blue, Curses::Color::Green);
+	cs.stdwin.GetCh();
 	return 0;
 }

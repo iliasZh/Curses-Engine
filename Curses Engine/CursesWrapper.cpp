@@ -10,7 +10,7 @@ Curses::Window::Window(ucoord startX, ucoord startY, ucoord width, ucoord height
 	, win{ newwin((int)height, (int)width, (int)startY, (int)startX) }
 {
 	assert(Curses::IsInitialized());
-	assert(width > 0 && height > 0);
+	assert(width > 0u && height > 0u);
 	if (startX + width > getmaxx(stdscr) || startY + height > getmaxy(stdscr))
 		THROW_CURSES_EXCEPTION("Curses Window constructor", "window out of bounds!");
 }
@@ -18,7 +18,23 @@ Curses::Window::Window(ucoord startX, ucoord startY, ucoord width, ucoord height
 Curses::Window::~Window()
 {
 	Clear();
-	delwin(win);
+	if (win && win != stdscr) // don't delwin() nullptr's and stdscr
+		delwin(win);
+}
+
+Curses::Window& Curses::Window::operator=(Window&& rhs) noexcept
+{
+	if (rhs.win != win)
+	{
+		startX = rhs.startX;
+		startY = rhs.startY;
+		width = rhs.width;
+		height = rhs.height;
+
+		win = rhs.win;
+		rhs.win = nullptr; // now unusable, ideally rhs should be destructed immediately
+	}
+	return *this;
 }
 
 void Curses::Window::DrawBox(Color fg, Color bg)
@@ -79,26 +95,29 @@ void Curses::Window::Clear()
 
 Curses::Curses()
 {
-	assert(++instances == 1u);
-
+	assert(instances == 0u);
 	initscr();
-	SetEchoMode(echoEnabled);
+
+	SetEchoMode(echoMode);
 	SetCursorMode(cursorMode);
+
+	// init all color pairs that we're going to use
 	if (HasColors())
 	{
 		start_color();
 		for (int i = 0; i < numOfColors; ++i) // foreground
 		{
 			for (int j = 0; j < numOfColors; ++j) // background
-			{
 				init_pair(i * numOfColors + j, i, j);
-			}
 		}
 	}
 	else
 	{
-		THROW_CURSES_EXCEPTION("Curses constructor", "your terminal does not support colors");
+		THROW_CURSES_EXCEPTION("Curses constructor", "your terminal does not support colors!");
 	}
+
+	stdwin = Window{}; // stdscr wrapper
+	++instances; // now curses are fully set up
 }
 
 Curses::~Curses()
@@ -118,7 +137,7 @@ void Curses::SetEchoMode(bool enable)
 	if (enable) echo();
 	else noecho();
 
-	echoEnabled = enable;
+	echoMode = enable;
 }
 
 chtype Curses::GetColorPair(Color f, Color b)
