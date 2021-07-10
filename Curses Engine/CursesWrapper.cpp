@@ -116,8 +116,9 @@ Curses::Curses()
 		THROW_CURSES_EXCEPTION("Curses constructor", "your terminal does not support colors!");
 	}
 
-	stdwin = Window{}; // stdscr wrapper
 	++instances; // now curses are fully set up
+	// std window
+	stdwin = Window{0u,0u,(Window::ucoord)getmaxx(stdscr),(Window::ucoord)getmaxy(stdscr)};
 }
 
 Curses::~Curses()

@@ -48,9 +48,14 @@ public:
 	{
 	public:
 		typedef uint16_t ucoord; // unsigned coordinate
-		
-		friend Curses::Curses(); // curses ctor initializes stdscreen window
-		
+		friend Curses::Curses();
+	private:
+		Window()
+			: startX{ 0u }, startY{ 0u }
+			, width{ (ucoord)getmaxx(stdscr) }, height{ (ucoord)getmaxy(stdscr) }
+			, win{ nullptr }
+		{}
+	public:
 		Window(ucoord startX, ucoord startY, ucoord width, ucoord height);
 		~Window();
 		Window(const Window&)				= delete;
@@ -68,13 +73,6 @@ public:
 		ucoord GetStartY()	const { return startY; }
 		ucoord Width()		const { return width; }
 		ucoord Height()		const { return height; }
-	private:
-		Window() 
-			: startX{ 0u }, startY{ 0u }
-			, width { (ucoord)getmaxx(stdscr) }
-			, height{ (ucoord)getmaxy(stdscr) }
-			, win{ stdscr }
-		{}
 	private:
 		ucoord startX, startY, width, height;
 		WINDOW* win = nullptr;

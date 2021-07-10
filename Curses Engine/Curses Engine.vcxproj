@@ -172,6 +172,7 @@
     <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="RandomNumberGenerator.h" />
     <ClInclude Include="StringTypedefs.h" />
     <ClInclude Include="Timer.h" />
