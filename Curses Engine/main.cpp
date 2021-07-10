@@ -2,7 +2,7 @@
 
 #include "Game.h"
 #include "RandomNumberGenerator.h"
-//#include "Menu.h"
+#include "Menu.h"
 
 #include <iostream>
 
@@ -11,17 +11,28 @@ int main()
 	//Game game;
 	Console con;
 	Curses cs;
-	cs.SetCursorMode(Curses::CursorMode::Invisible);
-	cs.SetEchoMode(false);
-	Curses::Window win{ 30,0,30,30 };
+	Keyboard kbd;
 
-	cs.stdwin.Write(0, 0, u8"adgafhafh", Curses::Color::Blue, Curses::Color::Green);
-	cs.stdwin.Write(0, 1, u8"adgafhafh", Curses::Color::Blue, Curses::Color::Green);
-	win.Write(0, 0, u8"HELLO");
-	cs.stdwin.Refresh();
-	win.Refresh();
-	cs.stdwin.Touch();
-	cs.stdwin.Refresh();
-	Sleep(2000);
+	cs.SetEchoMode(false);
+	cs.SetCursorMode(Curses::CursorMode::Invisible);
+
+	EntryList el
+	{
+		{
+			{u8"START",		{ {}				}	},
+			{u8"SETTINGS",	{ {}				}	},
+			{u8"ABOUT",		{ {}				}	},
+			{u8"CHOOSE",	{ {u8"YES", u8"NO"}	}	},
+			{u8"QUIT",		{ {}				}	}
+		}
+	};
+
+	LayoutDesc ld(LayoutDesc::Pos::Centered, 5u, 2u);
+
+	Menu menu(cs.stdwin, kbd, u8"MENU", el, ld);
+	menu.Show();
+
+	Sleep(5000);
+
 	return 0;
 }

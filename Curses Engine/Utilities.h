@@ -25,8 +25,3 @@ inline size_t count_codepoints(const u8str_view& str)
 			++count;
 	return count;
 }
-
-inline size_t count_codepoints(const u8str& str)
-{
-	return count_codepoints(u8str_view(str));
-}
