@@ -1,47 +1,52 @@
 #include "Menu.h"
+#include "Timer.h"
 
-int EntryList::Options::CurrentOptionIndex() const { return currOption; }
-
-u8str_view EntryList::Options::CurrentOption() const
+Switch::Switch(u8str_view name, std::vector<u8str_view> options)
+	: Entry{ name }
+	, opts{ options }
+	, currOpt{ 0 }
 {
-	if (currOption == -1)
-		THROW_MENU_EXCEPTION("CurrentOption", "options empty");
-	return options[currOption];
+	if (options.empty())
+		THROW_MENU_EXCEPTION("Switch constructor", "empty options not allowed");
 }
 
-int EntryList::Options::NextOption(bool loop) const
+std::unique_ptr<Button> MakeButton(u8str_view name, bool isClosing)
 {
-	if (currOption != -1 && ++currOption == options.size())
-		currOption = loop? 0 : (int)options.size() - 1;
-	return currOption;
+	return std::make_unique<Button>(name, isClosing);
+}
+std::unique_ptr<Switch> MakeSwitch(u8str_view name, Entry::Options opts)
+{
+	return std::make_unique<Switch>(name, opts);
 }
 
-int EntryList::Options::PrevOption(bool loop) const
-{
-	if (currOption != -1 && --currOption == -1)
-		currOption = loop ? (int)options.size() - 1 : 0;
-	return currOption;
-}
-
-
-EntryList::EntryList(std::vector<EntryList::Entry> entries)
-	: entries{ std::move(entries) }
+EntryList::EntryList(std::vector<std::unique_ptr<Entry>>&& ents)
+	: entries{ std::move(ents) }
 {
 	entries.shrink_to_fit();
 }
 
+EntryList::EntryList(EntryList&& el) noexcept
+	: entries{ std::move(el.entries) }
+{}
+
+EntryList& EntryList::operator=(EntryList&& el) noexcept
+{
+	entries = std::move(el.entries);
+	return *this;
+}
+
 size_t EntryList::EntryLength(size_t i) const
 {
-	size_t entry_name_len = count_codepoints(EntryName(i));
+	size_t entry_name_len = count_codepoints(entries[i]->Name());
 	if (!EntryHasOptions(i))
 		return entry_name_len;
 	else
-		return entry_name_len + count_codepoints(EntryOptions(i).CurrentOption());
+		return entry_name_len + count_codepoints(entries[i]->CurrentOption());
 }
 
 size_t EntryList::MaxEntryLength(size_t i) const
 {
-	size_t entry_name_len = count_codepoints(EntryName(i));
+	size_t entry_name_len = count_codepoints(entries[i]->Name());
 	if (!EntryHasOptions(i))
 	{
 		return entry_name_len;
@@ -49,7 +54,7 @@ size_t EntryList::MaxEntryLength(size_t i) const
 	else
 	{
 		size_t max_opt_len = 0u;
-		for (const auto& opt : EntryOptions(i).List())
+		for (const auto& opt : entries[i]->GetOptions())
 		{
 			if (size_t opt_len = count_codepoints(opt); opt_len > max_opt_len)
 				max_opt_len = opt_len;
@@ -77,13 +82,14 @@ bool EntryList::AnyEntryHasOptions() const
 }
 
 
-Menu::Menu(const Window& win, const Keyboard& kbd,
-	u8str_view title, EntryList el, LayoutDesc ld)
+Menu::Menu(const Window& win, Keyboard& kbd,
+	u8str_view title, EntryList el, LayoutDesc ld, MenuPalette mp)
 	: kbd{ kbd }
 	, title{ title }
-	, entryList{ el }
+	, entryList{ std::move(el) }
 	, layoutDesc{ ld }
-	, currEntry{ 0u }
+	, currEntryIndex{ 0 }
+	, palette{ mp }
 {
 	assert(entryList.Size() > 1u);
 
@@ -102,9 +108,65 @@ Menu::Menu(const Window& win, const Keyboard& kbd,
 	if (width > win.Width() || height > win.Height())
 		THROW_MENU_EXCEPTION("Menu constructor", "menu out of bounds");
 
+	auto start_pos = GetWindowStartPos(win, width, height);
+	
+	menuPtr = std::make_unique<Window>(start_pos.first, start_pos.second, width, height);
+	
+	Draw();
+}
+
+void Menu::Touch() const
+{
+	menuPtr->Touch();
+}
+
+void Menu::Refresh() const
+{
+	menuPtr->Refresh();
+}
+
+void Menu::Listen()
+{
+	assert(!listen);
+	listen = true;
+	Timer timer{};
+	while (listen)
+	{
+		timer.Mark();
+		if (kbd.IsKeyPressedOnce(VK_DOWN))
+		{
+			NextEntry();
+		}
+		else if (kbd.IsKeyPressedOnce(VK_UP))
+		{
+			PrevEntry();
+		}
+
+		if (kbd.IsKeyPressedOnce(VK_RETURN))
+		{
+			OnSelect();
+			listen = !(entryList[currEntryIndex]->IsClosing());
+		}
+
+		if (kbd.IsKeyPressedOnce(VK_RIGHT) && SwitchRight())
+		{
+			OnSwitchRight();
+		}
+		else if (kbd.IsKeyPressedOnce(VK_LEFT) && SwitchLeft())
+		{
+			OnSwitchLeft();
+		}
+
+		Refresh();
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(16.6f - (timer.Peek()))));
+	}
+}
+
+std::pair<Menu::ucoord, Menu::ucoord> Menu::GetWindowStartPos(const Window& win, 
+	ucoord width, ucoord height) const
+{
 	ucoord start_x = 0u;
 	ucoord start_y = 0u;
-
 	using Pos = LayoutDesc::Pos;
 	switch (layoutDesc.Positioning())
 	{
@@ -112,42 +174,115 @@ Menu::Menu(const Window& win, const Keyboard& kbd,
 		start_x = (win.Width() - width) / 2u;
 		start_y = (win.Height() - height) / 2u;
 		break;
-	// TODO: other cases
+	case Pos::TopLeft:
+		start_x = 0u;
+		start_y = 0u;
+		break;
+	case Pos::BottomLeft:
+		start_x = 0u;
+		start_y = win.Height() - height;
+		break;
+	case Pos::TopRight:
+		start_x = win.Width() - width;
+		start_y = 0u;
+		break;
+	case Pos::BottomRight:
+		start_x = win.Width() - width;
+		start_y = win.Height() - height;
+		break;
 	default:
 		start_x = 0u;
 		start_y = 0u;
 		break;
 	}
-	menuPtr = std::make_unique<Window>(start_x, start_y, width, height);
-	menuPtr->Write(1u, 1u, TitleToString(), titleCol, titleBg);
-	
-	// fill title gap
-	for (size_t i = 0u; i < layoutDesc.TitleGap(); ++i)
-	{
-		menuPtr->Write(1u, ucoord(2u + i),
-			u8str(menuPtr->Width() - 2u, u8' '), baseText, baseBg);
-	}
+	return std::make_pair(start_x, start_y);
+}
+
+void Menu::Draw() const
+{
+	DrawTitle();
+	DrawTitleGap();
 
 	// write out entries
 	for (size_t i = 0u; i < entryList.Size(); ++i)
 	{
-		Color text_color = (i == currEntry) ? selectText : baseText;
-		Color bg_color = (i == currEntry) ? selectBg : baseBg;
-
-		menuPtr->Write(1u, ucoord(2u + layoutDesc.TitleGap() + i),
-			EntryToString(i), text_color, bg_color);
+		DrawEntry(i);
 	}
-	menuPtr->DrawBox(boxFg, baseBg);
+
+	DrawBox();
 }
 
-void Menu::Show() const
+void Menu::DrawEntry(size_t i) const
 {
-	menuPtr->Touch();
-	menuPtr->Refresh();
+	Color text_color = (i == currEntryIndex) ? palette.selectText : palette.baseText;
+	Color bg_color = (i == currEntryIndex) ? palette.selectBg : palette.baseBg;
+
+	menuPtr->Write(1u, ucoord(2u + layoutDesc.TitleGap() + i),
+		EntryToString(i), text_color, bg_color);
 }
 
+void Menu::DrawTitle() const
+{
+	menuPtr->Write(1u, 1u, TitleToString(), palette.title, palette.titleBg);
+}
 
-u8str Menu::TitleToString()
+void Menu::DrawTitleGap() const
+{
+	for (size_t i = 0u; i < layoutDesc.TitleGap(); ++i)
+	{
+		menuPtr->Write(1u, ucoord(2u + i),
+			u8str(menuPtr->Width() - 2u, u8' '), palette.baseText, palette.baseBg);
+	}
+}
+
+void Menu::DrawBox() const
+{
+	menuPtr->DrawBox(palette.box, palette.baseBg);
+}
+
+int Menu::NextEntry()
+{
+	int prev_entry_index = currEntryIndex;
+	if (int list_size = (int)entryList.Size(); ++currEntryIndex == list_size)
+		currEntryIndex = loopEntryList ? 0 : (list_size - 1);
+	if (prev_entry_index != currEntryIndex)
+	{
+		DrawEntry(prev_entry_index);
+		DrawEntry(currEntryIndex);
+	}
+	return currEntryIndex;
+}
+
+int Menu::PrevEntry()
+{
+	int prev_entry_index = currEntryIndex;
+	if (--currEntryIndex == -1)
+		currEntryIndex = loopEntryList ? ((int)entryList.Size() - 1) : 0;
+	if (prev_entry_index != currEntryIndex)
+	{
+		DrawEntry(prev_entry_index);
+		DrawEntry(currEntryIndex);
+	}
+	return currEntryIndex;
+}
+
+bool Menu::SwitchLeft()
+{
+	const auto& curr_entry = entryList[currEntryIndex];
+	const bool switched = (curr_entry->Prev(loopSwitches) != curr_entry->CurrentOptionIndex());
+	if (switched) DrawEntry(currEntryIndex);
+	return switched;
+}
+
+bool Menu::SwitchRight()
+{
+	const auto& curr_entry = entryList[currEntryIndex];
+	const bool switched = (curr_entry->Next(loopSwitches) != curr_entry->CurrentOptionIndex());
+	if (switched) DrawEntry(currEntryIndex);
+	return switched;
+}
+
+u8str Menu::TitleToString() const
 {
 	size_t title_len = count_codepoints(title);
 	size_t l_margin = (menuPtr->Width() - 2u - title_len) / 2u;
@@ -161,7 +296,7 @@ u8str Menu::TitleToString()
 	return title_str;
 }
 
-u8str Menu::EntryToString(size_t i)
+u8str Menu::EntryToString(size_t i) const
 {
 	u8str entry;
 	size_t entry_len;
@@ -173,15 +308,21 @@ u8str Menu::EntryToString(size_t i)
 	size_t r_margin = (menuPtr->Width() - 2u - entry_len) - l_margin;
 
 	entry += u8str(l_margin, u8' ');
-
-	entry += entryList.EntryName(i);
+	entry += entryList[i]->Name();
 	if (entryList.EntryHasOptions(i))
 	{
 		entry += u8": ";
-		const EntryList::Options& opts = entryList.EntryOptions(i);
-		entry += opts.CurrentOption();
+		entry += entryList[i]->CurrentOption();
 	}
 	entry += u8str(r_margin, u8' ');
-
+	
+	if (i == currEntryIndex && entryList.EntryHasOptions(i))
+	{
+		int num_of_opts = (int)entryList[i]->GetOptions().size();
+		if (loopSwitches || entryList[i]->CurrentOptionIndex() != 0)
+			entry.front() = u8'<';
+		if (loopSwitches || entryList[i]->CurrentOptionIndex() != num_of_opts - 1)
+			entry.back() = u8'>';
+	}
 	return entry;
 }

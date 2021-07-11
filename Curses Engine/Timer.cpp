@@ -11,11 +11,11 @@ float Timer::Mark() noexcept
 {
 	const auto old = last;
 	last = steady_clock::now();
-	const duration<float> frameTime = last - old;
+	const duration<float, std::milli> frameTime = last - old;
 	return frameTime.count();
 }
 
 float Timer::Peek() const noexcept
 {
-	return duration<float>(steady_clock::now() - last).count();
+	return duration<float, std::milli>(steady_clock::now() - last).count();
 }
