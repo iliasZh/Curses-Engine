@@ -33,6 +33,16 @@ bool Keyboard::IsKeyPressedOnce(int vkcode)
 	return was_pressed[vkcode];
 }
 
+bool Keyboard::IsBindingPressed(Controls::Binding b)
+{
+	return IsKeyPressed(b.Primary()) || IsKeyPressed(b.Secondary());
+}
+
+bool Keyboard::IsBindingPressedOnce(Controls::Binding b)
+{
+	return IsKeyPressedOnce(b.Primary()) || IsKeyPressedOnce(b.Secondary());
+}
+
 void Keyboard::PollKeyboard()
 {
 	while (!end_polling.load())

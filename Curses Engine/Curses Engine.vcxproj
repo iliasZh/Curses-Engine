@@ -169,9 +169,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConsoleWrapper.h" />
+    <ClInclude Include="Controls.h" />
     <ClInclude Include="CursesWrapper.h" />
     <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GlobalParameters.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="RandomNumberGenerator.h" />

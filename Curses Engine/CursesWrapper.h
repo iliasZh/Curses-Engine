@@ -63,8 +63,8 @@ public:
 		Window& operator=(Window&& rhs) noexcept; // rhs becomes UNUSABLE after moving
 
 		void DrawBox(Color fg = Color::White, Color bg = Color::Black);
-		void Refresh();
-		void Touch();
+		void Refresh() const;
+		void Touch() const;
 		void Write(ucoord x, ucoord y, u8str_view str, Color fg = Color::White, Color bg = Color::Black);
 		void GetCh();
 		void Clear();

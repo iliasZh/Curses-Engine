@@ -8,9 +8,6 @@
 #include <memory>
 #include <queue>
 
-
-#include <iostream>
-
 class Entry
 {
 public:
@@ -27,7 +24,7 @@ public:
 protected:
 	u8str_view name;
 };
-inline Entry::~Entry() {}
+inline Entry::~Entry() {} // you have to provide an implementation for a pure virtual destructor! o_O
 
 class Button final : public Entry
 {
@@ -139,9 +136,8 @@ public:
 	void Listen();
 
 	// overriden by user!
-	virtual void OnSelect() {}
-	virtual void OnSwitchRight() {}
-	virtual void OnSwitchLeft() {}
+	virtual void OnSelect(u8str_view name) {}
+	virtual void OnSwitch(u8str_view name, u8str_view opt) {}
 
 public: // getters/setters
 	bool IsLooping() const { return loopEntryList; }
@@ -151,8 +147,10 @@ public: // getters/setters
 	void EnableSwitchesLooping() { loopSwitches = true; }
 	void DisableSwitchesLooping() { loopSwitches = false; }
 	MenuPalette& GetPalette() { return palette; }
+	void SetLayoutDesc(LayoutDesc ld);
 private: // helpers
-	std::pair<ucoord, ucoord> GetWindowStartPos(const Window& win, ucoord width, ucoord height) const;
+	void CreateMenuWindow();
+	std::pair<ucoord, ucoord> GetWindowStartPos(ucoord width, ucoord height) const;
 	void Draw() const;
 	void DrawEntry(size_t i) const;
 	void DrawTitle() const;
@@ -176,6 +174,7 @@ public:
 		}
 	};
 private:
+	const Window& parentWin;
 	std::unique_ptr<Window> menuPtr;
 	Keyboard& kbd;
 	u8str_view title;

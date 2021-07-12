@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WindowsFunctionality.h"
+#include "Controls.h"
 #include <bitset>
 #include <thread>
 #include <mutex>
@@ -15,14 +15,8 @@ public:
 	bool IsKeyPressed(int vk_code);
 	bool IsKeyPressedOnce(int vkcode);
 
-	//bool IsBindingPressed(Controls::Binding b)
-	//{
-	//	return IsKeyPressed(b.Primary()) || IsKeyPressed(b.Secondary());
-	//}
-	//bool IsBindingPressedOnce(Controls::Binding b)
-	//{
-	//	return IsKeyPressedOnce(b.Primary()) || IsKeyPressedOnce(b.Secondary());
-	//}
+	bool IsBindingPressed(Controls::Binding b);
+	bool IsBindingPressedOnce(Controls::Binding b);
 private:
 	void PollKeyboard();
 	bool ReadWriteKeystates(bool is_read, int vk_code = 0);

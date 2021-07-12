@@ -52,12 +52,12 @@ void Curses::Window::DrawBox(Color fg, Color bg)
 		box(win, 0, 0);
 }
 
-void Curses::Window::Refresh()
+void Curses::Window::Refresh() const
 {
 	wrefresh(win);
 }
 
-void Curses::Window::Touch()
+void Curses::Window::Touch() const
 {
 	touchwin(win);
 }

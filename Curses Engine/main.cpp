@@ -16,31 +16,20 @@ int main()
 	cs.SetEchoMode(false);
 	cs.SetCursorMode(Curses::CursorMode::Invisible);
 
-	//EntryList el
-	//{
-	//	{
-	//		MakeButton(u8"START",		false							),
-	//		MakeButton(u8"SETTINGS",	true							),
-	//		MakeButton(u8"ABOUT",		false							),
-	//		MakeSwitch(u8"CHOOSE",		Entry::Options{u8"YES", u8"NO"}	),
-	//		MakeButton(u8"QUIT",		true							)
-	//	}
-	//};
+	std::vector<std::unique_ptr<Entry>> en_ents{};
+	en_ents.push_back(MakeButton(u8"START",		false)												);
+	en_ents.push_back(MakeButton(u8"SETTINGS",	false)												);
+	en_ents.push_back(MakeSwitch(u8"LANGUAGE",	Switch::Options{u8"ENGLISH", u8"РУССКИЙ"})			);
+	en_ents.push_back(MakeSwitch(u8"MENU SIZE",	Switch::Options{ u8"SMALL", u8"MEDIUM", u8"LARGE"})	);
+	en_ents.push_back(MakeButton(u8"QUIT",		true)												);
 
-	std::vector<std::unique_ptr<Entry>> ents{};
-	ents.push_back(MakeButton(u8"START",	false)								);
-	ents.push_back(MakeButton(u8"SETTINGS", true)								);
-	ents.push_back(MakeButton(u8"ABOUT",	false)								);
-	ents.push_back(MakeSwitch(u8"CHOOSE",	Switch::Options{ u8"YES", u8"MAYBE", u8"NO"}));
-	ents.push_back(MakeButton(u8"QUIT",		true)								);
+	EntryList el{ std::move(en_ents) };
+	
+	LayoutDesc ld(LayoutDesc::Pos::Centered, 1u, 1u);
 
-	EntryList el{ std::move(ents) };
-
-	LayoutDesc ld(LayoutDesc::Pos::Centered, 5u, 2u);
-
-	Menu menu(cs.stdwin, kbd, u8"MENU", std::move(el), ld);
+	Menu menu(cs.stdwin, kbd, u8"MENU MENU MENU MENU MENU MENU", std::move(el), ld);
 	menu.EnableLooping();
-	menu.EnableSwitchesLooping();
+	//menu.EnableSwitchesLooping();
 	menu.Refresh();
 	menu.Listen();
 

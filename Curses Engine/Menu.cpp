@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "Timer.h"
+#include "GlobalParameters.h"
 
 Switch::Switch(u8str_view name, std::vector<u8str_view> options)
 	: Entry{ name }
@@ -90,29 +91,9 @@ Menu::Menu(const Window& win, Keyboard& kbd,
 	, layoutDesc{ ld }
 	, currEntryIndex{ 0 }
 	, palette{ mp }
+	, parentWin{ win }
 {
-	assert(entryList.Size() > 1u);
-
-	// 1 additional line for title, 2 for box
-	ucoord height = ucoord(entryList.Size() + layoutDesc.TitleGap() + 1u + 2u); 
-	
-	// width = max(max entry length, title length) + 2 margins + 2 chars for box +
-	// + (if any entry has options) 2 chars
-	ucoord width = ucoord
-	(
-		std::max(entryList.LongestEntryLength(), count_codepoints(title)) +
-		+ 2u * (size_t)layoutDesc.MarginSize() + 2u +
-		+ ((entryList.AnyEntryHasOptions()) ? 2u : 0u)
-	);
-
-	if (width > win.Width() || height > win.Height())
-		THROW_MENU_EXCEPTION("Menu constructor", "menu out of bounds");
-
-	auto start_pos = GetWindowStartPos(win, width, height);
-	
-	menuPtr = std::make_unique<Window>(start_pos.first, start_pos.second, width, height);
-	
-	Draw();
+	CreateMenuWindow();
 }
 
 void Menu::Touch() const
@@ -132,38 +113,73 @@ void Menu::Listen()
 	Timer timer{};
 	while (listen)
 	{
+		const auto& curr_entry = entryList[currEntryIndex];
+		const bool has_opts = entryList.EntryHasOptions(currEntryIndex);
 		timer.Mark();
-		if (kbd.IsKeyPressedOnce(VK_DOWN))
+		if (kbd.IsBindingPressedOnce(Controls::Down))
 		{
 			NextEntry();
 		}
-		else if (kbd.IsKeyPressedOnce(VK_UP))
+		else if (kbd.IsBindingPressedOnce(Controls::Up))
 		{
 			PrevEntry();
 		}
 
-		if (kbd.IsKeyPressedOnce(VK_RETURN))
+		if (kbd.IsBindingPressedOnce(Controls::Select) && !has_opts)
 		{
-			OnSelect();
-			listen = !(entryList[currEntryIndex]->IsClosing());
+			OnSelect(curr_entry->Name());
+			listen = !(curr_entry->IsClosing());
 		}
 
-		if (kbd.IsKeyPressedOnce(VK_RIGHT) && SwitchRight())
+		if (kbd.IsBindingPressedOnce(Controls::Right) && SwitchRight())
 		{
-			OnSwitchRight();
+			OnSwitch(curr_entry->Name(), curr_entry->CurrentOption());
 		}
-		else if (kbd.IsKeyPressedOnce(VK_LEFT) && SwitchLeft())
+		else if (kbd.IsBindingPressedOnce(Controls::Left) && SwitchLeft())
 		{
-			OnSwitchLeft();
+			OnSwitch(curr_entry->Name(), curr_entry->CurrentOption());
 		}
 
 		Refresh();
-		std::this_thread::sleep_for(std::chrono::milliseconds(int(16.6f - (timer.Peek()))));
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(Global::frametime - (timer.Peek()))));
 	}
 }
 
-std::pair<Menu::ucoord, Menu::ucoord> Menu::GetWindowStartPos(const Window& win, 
-	ucoord width, ucoord height) const
+void Menu::SetLayoutDesc(LayoutDesc ld)
+{
+	layoutDesc = ld;
+	parentWin.Touch();
+	parentWin.Refresh();
+	CreateMenuWindow();
+}
+
+void Menu::CreateMenuWindow()
+{
+	assert(entryList.Size() > 1u);
+
+	// 1 additional line for title, 2 for box
+	ucoord height = ucoord(entryList.Size() + layoutDesc.TitleGap() + 1u + 2u);
+
+	// width = max(max entry length, title length) + 2 margins + 2 chars for box +
+	// + (if any entry has options) 2 chars
+	ucoord width = ucoord
+	(
+		std::max(entryList.LongestEntryLength(), count_codepoints(title)) +
+		+2u * (size_t)layoutDesc.MarginSize() + 2u +
+		+((entryList.AnyEntryHasOptions()) ? 2u : 0u)
+	);
+
+	if (width > parentWin.Width() || height > parentWin.Height())
+		THROW_MENU_EXCEPTION("Menu constructor", "menu out of bounds");
+
+	auto start_pos = GetWindowStartPos(width, height);
+
+	menuPtr = std::make_unique<Window>(start_pos.first, start_pos.second, width, height);
+
+	Draw();
+}
+
+std::pair<Menu::ucoord, Menu::ucoord> Menu::GetWindowStartPos(ucoord width, ucoord height) const
 {
 	ucoord start_x = 0u;
 	ucoord start_y = 0u;
@@ -171,8 +187,8 @@ std::pair<Menu::ucoord, Menu::ucoord> Menu::GetWindowStartPos(const Window& win,
 	switch (layoutDesc.Positioning())
 	{
 	case Pos::Centered:
-		start_x = (win.Width() - width) / 2u;
-		start_y = (win.Height() - height) / 2u;
+		start_x = (parentWin.Width() - width) / 2u;
+		start_y = (parentWin.Height() - height) / 2u;
 		break;
 	case Pos::TopLeft:
 		start_x = 0u;
@@ -180,15 +196,15 @@ std::pair<Menu::ucoord, Menu::ucoord> Menu::GetWindowStartPos(const Window& win,
 		break;
 	case Pos::BottomLeft:
 		start_x = 0u;
-		start_y = win.Height() - height;
+		start_y = parentWin.Height() - height;
 		break;
 	case Pos::TopRight:
-		start_x = win.Width() - width;
+		start_x = parentWin.Width() - width;
 		start_y = 0u;
 		break;
 	case Pos::BottomRight:
-		start_x = win.Width() - width;
-		start_y = win.Height() - height;
+		start_x = parentWin.Width() - width;
+		start_y = parentWin.Height() - height;
 		break;
 	default:
 		start_x = 0u;
@@ -316,7 +332,7 @@ u8str Menu::EntryToString(size_t i) const
 	}
 	entry += u8str(r_margin, u8' ');
 	
-	if (i == currEntryIndex && entryList.EntryHasOptions(i))
+	if (i == currEntryIndex && entryList.EntryHasOptions(i) && layoutDesc.MarginSize() > 0u)
 	{
 		int num_of_opts = (int)entryList[i]->GetOptions().size();
 		if (loopSwitches || entryList[i]->CurrentOptionIndex() != 0)
