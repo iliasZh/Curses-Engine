@@ -4,6 +4,9 @@
 #include "CursesWrapper.h"
 #include "Keyboard.h"
 #include "Utilities.h"
+#include "GlobalParameters.h"
+#include "Expression.h"
+#include "CommonExpressions.h"
 #include <vector>
 #include <memory>
 #include <queue>
@@ -11,25 +14,27 @@
 class Entry
 {
 public:
+	using AbstractOptions = std::vector<Expression>;
 	using Options = std::vector<u8str_view>;
-	Entry(u8str_view name) : name{ name } {}
+	Entry(Expression name) : name{ name } {}
 	virtual ~Entry() = 0;
-	u8str_view Name() const { return name; }
+	u8str_view Name(Lang lang) const { return name[lang]; }
 	virtual bool IsClosing() const { return false; }
 	virtual int Next(bool) const { return -1; }
 	virtual int Prev(bool) const { return -1; }
-	virtual Options GetOptions() const { return {}; }
+	bool HasOptions() const { return CurrentOptionIndex() != -1; }
+	virtual Options GetOptions(Lang lang) const { return {}; }
 	virtual int CurrentOptionIndex() const { return -1; }
-	virtual u8str_view CurrentOption() const { return u8""; }
+	virtual u8str_view CurrentOption(Lang lang) const { return u8""; }
 protected:
-	u8str_view name;
+	Expression name;
 };
 inline Entry::~Entry() {} // you have to provide an implementation for a pure virtual destructor! o_O
 
 class Button final : public Entry
 {
 public:
-	Button(u8str_view name, bool isClosing)
+	Button(Expression name, bool isClosing)
 		: Entry{ name }, isClosing{ isClosing }
 	{}
 	bool IsClosing() const override { return isClosing; }
@@ -42,7 +47,8 @@ class Switch final : public Entry
 {
 public:
 	using Options = Entry::Options;
-	Switch(u8str_view name, std::vector<u8str_view> options);
+	using AbstractOptions = Entry::AbstractOptions;
+	Switch(Expression name, AbstractOptions options);
 	~Switch() override {}
 	int Next(bool loop) const override
 	{
@@ -56,16 +62,23 @@ public:
 			currOpt = loop ? (size - 1) : 0;
 		return currOpt;
 	}
-	Options GetOptions() const override { return opts; }
+	Options GetOptions(Lang lang) const override
+	{
+		Options opts_ret{};
+		opts_ret.reserve(opts.size());
+		for (const auto& opt : opts)
+			opts_ret.push_back(opt[lang]);
+		return opts_ret;
+	}
 	int CurrentOptionIndex() const override { return currOpt; }
-	u8str_view CurrentOption() const override { return opts[currOpt]; }
+	u8str_view CurrentOption(Lang lang) const override { return opts[currOpt][lang]; }
 private:
-	Options opts;
+	AbstractOptions opts;
 	mutable int currOpt;
 };
 
-std::unique_ptr<Button> MakeButton(u8str_view name, bool isClosing);
-std::unique_ptr<Switch> MakeSwitch(u8str_view name, Entry::Options opts);
+std::unique_ptr<Button> MakeButton(Expression name, bool isClosing);
+std::unique_ptr<Switch> MakeSwitch(Expression name, Switch::AbstractOptions opts);
 
 class EntryList
 {
@@ -80,7 +93,6 @@ public:
 	size_t LongestEntryLength() const;
 	size_t Size() const { return entries.size(); }
 	const std::unique_ptr<Entry>& operator[](size_t i) const { return entries[i]; }
-	bool EntryHasOptions(size_t i) const { return !(entries[i]->GetOptions().empty()); }
 	bool AnyEntryHasOptions() const;
 private:
 	std::vector<std::unique_ptr<Entry>> entries;
@@ -97,16 +109,16 @@ struct LayoutDesc
 		TopRight,
 		BottomRight
 	};
-	LayoutDesc(Pos pos = Pos::Centered, char_count marginSize = 3u, char_count titleGap = 0u)
-		: pos{ pos }, marginSize{ marginSize }, titleGap{ titleGap }
+	LayoutDesc(Pos pos = Pos::Centered, char_count marginHoriz = 3u, char_count marginVert = 0u)
+		: pos{ pos }, marginHoriz{ marginHoriz }, marginVert{ marginVert }
 	{}
 	Pos Positioning() const { return pos; }
-	char_count MarginSize() const { return marginSize; }
-	char_count TitleGap() const { return titleGap; }
+	char_count HorizontalMargin() const { return marginHoriz; }
+	char_count VerticalMargin() const { return marginVert; }
 private:
 	Pos pos;
-	char_count marginSize;
-	char_count titleGap;
+	char_count marginHoriz;
+	char_count marginVert;
 };
 
 struct MenuPalette
@@ -114,13 +126,13 @@ struct MenuPalette
 private:
 	using Color = Curses::Color;
 public:
-	Color baseBg		= Color::Cyan;
-	Color selectBg		= Color::Blue;
-	Color baseText		= Color::Black;
-	Color selectText	= Color::Yellow;
-	Color title			= Color::Green;
-	Color titleBg		= Color::Black;
-	Color box			= Color::Black;
+	Color baseBg			= Color::Black;
+	Color entrySelectBg		= Color::Blue;
+	Color entrySelectText	= Color::Yellow;
+	Color entryBg			= Color::Cyan;
+	Color entryText			= Color::Black;
+	Color title				= Color::Green;
+	Color box				= Color::White;
 };
 
 class Menu
@@ -129,15 +141,43 @@ public:
 	using Color = Curses::Color;
 	using Window = Curses::Window;
 	using ucoord = Window::ucoord;
-	Menu(const Window& win, Keyboard& kbd, u8str_view title,
+	Menu(const Window& win, Keyboard& kbd, Expression title,
 		EntryList entryList, LayoutDesc ld = {}, MenuPalette mp = {});
 	void Touch() const;
 	void Refresh() const;
 	void Listen();
 
 	// overriden by user!
-	virtual void OnSelect(u8str_view name) {}
-	virtual void OnSwitch(u8str_view name, u8str_view opt) {}
+	virtual void OnSelect(u8str_view name)
+	{
+
+	}
+	virtual void OnSwitch(u8str_view name, u8str_view opt)
+	{
+		using Exp = CommonExpressions;
+		if (name == Exp::language)
+		{
+			if (opt == Exp::english)
+				global.lang = Lang::EN;
+			else if (opt == Exp::russian)
+				global.lang = Lang::RU;
+
+			parentWin.Touch();
+			parentWin.Refresh();
+			CreateMenuWindow();
+		}
+
+		Expression menu_size = { {Lang::EN, u8"MENU SIZE"}, {Lang::RU, u8"–¿«Ã≈– Ã≈Õﬁ"} };
+		if (name == menu_size)
+		{
+			if (opt == Exp::small)
+				SetLayoutDesc({ LayoutDesc::Pos::Centered, 1u, 0u });
+			else if (opt == Exp::medium)
+				SetLayoutDesc({ LayoutDesc::Pos::Centered, 3u, 1u });
+			else if (opt == Exp::large)
+				SetLayoutDesc({ LayoutDesc::Pos::Centered, 5u, 2u });
+		}
+	}
 
 public: // getters/setters
 	bool IsLooping() const { return loopEntryList; }
@@ -154,7 +194,8 @@ private: // helpers
 	void Draw() const;
 	void DrawEntry(size_t i) const;
 	void DrawTitle() const;
-	void DrawTitleGap() const;
+	void DrawUpperMargin() const;
+	void DrawLowerMargin() const;
 	void DrawBox() const;
 	int NextEntry();
 	int PrevEntry();
@@ -177,10 +218,11 @@ private:
 	const Window& parentWin;
 	std::unique_ptr<Window> menuPtr;
 	Keyboard& kbd;
-	u8str_view title;
+	Expression title;
 	EntryList entryList;
 	LayoutDesc layoutDesc;
 	MenuPalette palette;
+	u8str separatorLine{};
 	int currEntryIndex;
 	bool loopEntryList = false;
 	bool loopSwitches = false;

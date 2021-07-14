@@ -168,10 +168,12 @@
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommonExpressions.h" />
     <ClInclude Include="ConsoleWrapper.h" />
     <ClInclude Include="Controls.h" />
     <ClInclude Include="CursesWrapper.h" />
     <ClInclude Include="ExceptionBase.h" />
+    <ClInclude Include="Expression.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GlobalParameters.h" />
     <ClInclude Include="Keyboard.h" />
