@@ -143,41 +143,14 @@ public:
 	using ucoord = Window::ucoord;
 	Menu(const Window& win, Keyboard& kbd, Expression title,
 		EntryList entryList, LayoutDesc ld = {}, MenuPalette mp = {});
+	virtual ~Menu() = default;
 	void Touch() const;
 	void Refresh() const;
 	void Listen();
 
 	// overriden by user!
-	virtual void OnSelect(u8str_view name)
-	{
-
-	}
-	virtual void OnSwitch(u8str_view name, u8str_view opt)
-	{
-		using Exp = CommonExpressions;
-		if (name == Exp::language)
-		{
-			if (opt == Exp::english)
-				global.lang = Lang::EN;
-			else if (opt == Exp::russian)
-				global.lang = Lang::RU;
-
-			parentWin.Touch();
-			parentWin.Refresh();
-			CreateMenuWindow();
-		}
-
-		Expression menu_size = { {Lang::EN, u8"MENU SIZE"}, {Lang::RU, u8"–¿«Ã≈– Ã≈Õﬁ"} };
-		if (name == menu_size)
-		{
-			if (opt == Exp::small)
-				SetLayoutDesc({ LayoutDesc::Pos::Centered, 1u, 0u });
-			else if (opt == Exp::medium)
-				SetLayoutDesc({ LayoutDesc::Pos::Centered, 3u, 1u });
-			else if (opt == Exp::large)
-				SetLayoutDesc({ LayoutDesc::Pos::Centered, 5u, 2u });
-		}
-	}
+	virtual void OnSelect(u8str_view name)					= 0;
+	virtual void OnSwitch(u8str_view name, u8str_view opt)	= 0;
 
 public: // getters/setters
 	bool IsLooping() const { return loopEntryList; }
@@ -188,10 +161,11 @@ public: // getters/setters
 	void DisableSwitchesLooping() { loopSwitches = false; }
 	MenuPalette& GetPalette() { return palette; }
 	void SetLayoutDesc(LayoutDesc ld);
-private: // helpers
+protected: // helpers
 	void CreateMenuWindow();
-	std::pair<ucoord, ucoord> GetWindowStartPos(ucoord width, ucoord height) const;
 	void Draw() const;
+private:
+	std::pair<ucoord, ucoord> GetWindowStartPos(ucoord width, ucoord height) const;
 	void DrawEntry(size_t i) const;
 	void DrawTitle() const;
 	void DrawUpperMargin() const;
@@ -214,14 +188,15 @@ public:
 			errorType = "Menu error";
 		}
 	};
-private:
+protected:
 	const Window& parentWin;
 	std::unique_ptr<Window> menuPtr;
+	MenuPalette palette;
+private:
 	Keyboard& kbd;
 	Expression title;
 	EntryList entryList;
 	LayoutDesc layoutDesc;
-	MenuPalette palette;
 	u8str separatorLine{};
 	int currEntryIndex;
 	bool loopEntryList = false;
