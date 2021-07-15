@@ -4,37 +4,35 @@
 Console::Console(char_count width,
 				char_count height, 
 				scrpx_count fontWidth, 
-				std::wstring title)
+				std::wstring_view title)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, width{ width }, height{ height }
 	, fontWidth{ fontWidth }
 	, title{ title }
 {
-	// sanity check
-	assert(++instances == 1);
-
-	SetupFont();
-
-	SetupScreenBuffer(false);
-
-	SetTitleAndGetHwnd();
-
-	GetMonitorWorkAreaSize();
-
-	SetupStyle();
-
-	CenterWindow();
+	SetupConsole(false);
 }
 
-Console::Console(scrpx_count fontWidthPx, std::wstring title)
+Console::Console(scrpx_count fontWidthPx, std::wstring_view title)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, width{ 0 }, height{ 0 }
 	, fontWidth{ fontWidthPx }
 	, title{ title }
 {
+	SetupConsole(true);
+}
+
+void Console::SetupConsole(bool maxSize)
+{
+	// sanity check
+	assert(++instances == 1);
+
+	if (conOut == INVALID_HANDLE_VALUE)
+		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");
+
 	SetupFont();
 
-	SetupScreenBuffer(true);
+	SetupScreenBuffer(maxSize);
 
 	SetTitleAndGetHwnd();
 
@@ -96,18 +94,20 @@ void Console::SetupScreenBuffer(bool maxSize)
 
 void Console::SetTitleAndGetHwnd()
 {
-	std::wstring setup = L"Console engine setup...";
-	SetConsoleTitle(setup.c_str()); // set a special title to get a HWND to the console
+	std::wstring_view setup = L"Console engine setup...";
+	SetConsoleTitle(setup.data()); // set a special title to get a HWND to the console
 	Sleep(50); // wait some milliseconds for title to be set...
 
-	if ((hConsole = FindWindow(NULL, setup.c_str())) == NULL)
+	if ((hConsole = FindWindow(NULL, setup.data())) == NULL)
 		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
 
-	SetConsoleTitle(title.c_str()); // set requested title
+	SetConsoleTitle(title.data()); // set requested title
 }
 
 void Console::GetMonitorWorkAreaSize()
 {
+	assert(hConsole != NULL);
+
 	HMONITOR h_mon = MonitorFromWindow(hConsole, MONITOR_DEFAULTTOPRIMARY);
 	MONITORINFO mi{};
 	mi.cbSize = sizeof(mi);
@@ -119,6 +119,8 @@ void Console::GetMonitorWorkAreaSize()
 
 void Console::SetupStyle()
 {
+	assert(hConsole != NULL);
+
 	LONG console_style;
 	console_style = GetWindowLong(hConsole, GWL_STYLE); // get window style
 
@@ -127,12 +129,23 @@ void Console::SetupStyle()
 	if (console_style & WS_MAXIMIZEBOX)	// do not allow to maximize window
 		console_style ^= WS_MAXIMIZEBOX;	// set to false
 	SetWindowLong(hConsole, GWL_STYLE, console_style);	// set the new style
-	SetWindowPos(hConsole, HWND_TOP, 0, 0, 0, 0, 
-				SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+	
+	// MSDN:
+	// If you have changed certain window data using SetWindowLong,
+	// you must call SetWindowPos for the changes to take effect.
+	// Use the following combination for uFlags:
+	// SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED.
+	SetWindowPos
+	(
+		hConsole, HWND_TOP, 0, 0, 0, 0, 
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
+	);
 }
 
 void Console::CenterWindow()
 {
+	assert(hConsole != NULL);
+
 	WINDOWINFO win_info;
 	win_info.cbSize = sizeof(win_info);
 	if (GetWindowInfo(hConsole, &win_info) == 0)
@@ -143,9 +156,9 @@ void Console::CenterWindow()
 	SetWindowPos
 	(
 		hConsole, HWND_TOP,
-		((int)workAreaWidth - (int)width_px) / 2,		// may be negative! only slightly though
+		((int)workAreaWidth - (int)width_px) / 2,	// may be negative! only slightly though
 		((int)workAreaHeight - (int)height_px) / 2,	// may be negative! only slightly though
 		width_px, height_px,
-		SWP_NOSIZE // do not change size (ignore two prev params)
+		SWP_NOSIZE									// do not change size (ignore two prev params)
 	);
 }

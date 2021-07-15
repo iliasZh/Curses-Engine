@@ -26,14 +26,18 @@ public:
 	Console(char_count width,
 			char_count height, 
 			scrpx_count fontWidthPx = 15u,
-			std::wstring title = L"WinCon Engine by Ilias");
-	Console(scrpx_count fontWidthPx = 15u, std::wstring title = L"WinCon Engine by Ilias");
+			std::wstring_view title = L"WinCon Engine by Ilias");
+	Console(scrpx_count fontWidthPx = 15u, std::wstring_view title = L"WinCon Engine by Ilias");
 	Console(const Console&) = delete;
 	Console(Console&&) = delete;
 	Console& operator=(const Console&) = delete;
 	Console& operator=(Console&&) = delete;
 	~Console() {}
+public:
+	char_count Width() const { return width; }
+	char_count Height() const { return height; }
 private:
+	void SetupConsole(bool maxSize);
 	void SetupFont();
 	void SetupScreenBuffer(bool maxSize);
 	void SetTitleAndGetHwnd();
@@ -41,9 +45,9 @@ private:
 	void CenterWindow();
 	void SetupStyle();
 private:
-	HWND hConsole;
-	HANDLE conOut;
-	std::wstring title;
+	HWND hConsole = NULL;
+	HANDLE conOut = INVALID_HANDLE_VALUE;
+	std::wstring_view title;
 	char_count width;
 	char_count height;
 	scrpx_count fontWidth;
