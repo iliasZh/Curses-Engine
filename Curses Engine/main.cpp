@@ -1,16 +1,18 @@
 ﻿#pragma comment(lib, "C:\\cpplibraries\\pdcurses.lib")
 
 #include "WindowsFunctionality.h"
-#include "CursesWrapper.h"
 #include "ConsoleWrapper.h"
+#include <iostream>
 
 int main()
 {
-	Console con{ 15u };
-	Curses cs;
-	Curses::Window win{ 0, 0, 30, 10 };
-	win.Write(0, 0, u8"ПОЛНОСТЬЮ НА РУССКОМ ЯЗЫКЕ", Curses::Color::Blue, Curses::Color::Green);
-	win.Refresh();
-	Sleep(5000);
+	try
+	{
+		Console con{ 8u };
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what();
+	}
 	return 0;
 }
