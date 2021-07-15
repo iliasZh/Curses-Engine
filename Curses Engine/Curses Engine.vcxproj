@@ -179,6 +179,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="RandomNumberGenerator.h" />
+    <ClInclude Include="Screen.h" />
     <ClInclude Include="StringTypedefs.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
