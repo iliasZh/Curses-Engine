@@ -22,6 +22,23 @@ Console::Console(scrpx_count fontWidthPx, std::wstring_view title)
 	SetupConsole(true);
 }
 
+void Console::Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart)
+{
+	assert(conOut != INVALID_HANDLE_VALUE);
+	assert(size.X <= width);
+	assert(size.Y <= height);
+	SMALL_RECT draw_region = 
+	{ 
+		drawStart.X, drawStart.Y, 
+		drawStart.X + size.X - 1, drawStart.Y + size.Y - 1
+	};
+	assert(draw_region.Right < width);
+	assert(draw_region.Bottom < height);
+
+	if (WriteConsoleOutput(conOut, buffer, size, { 0,0 }, &draw_region) == 0)
+		THROW_CONSOLE_EXCEPTION("Draw", "failed to draw buffer");
+}
+
 void Console::SetupConsole(bool maxSize)
 {
 	// sanity check

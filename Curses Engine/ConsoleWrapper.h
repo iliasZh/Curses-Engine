@@ -32,7 +32,8 @@ public:
 	Console(Console&&) = delete;
 	Console& operator=(const Console&) = delete;
 	Console& operator=(Console&&) = delete;
-	~Console() {}
+	
+	void Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart);
 public:
 	char_count Width() const { return width; }
 	char_count Height() const { return height; }
