@@ -9,12 +9,12 @@ int main()
 	try
 	{
 		Console con{ 10u };
+		con.SetCursorMode(Console::Cursor::Invisible);
 		Keyboard kbd{};
 
-		con.SetCursorMode(Console::Cursor::Invisible);
-
-		COORD size = { (SHORT)con.Width(), (SHORT)con.Height() };
-		CHAR_INFO* buffer = new CHAR_INFO[size.X * size.Y];
+		Window win{ con, con.Width() / 4u, con.Height() / 4u, con.Width() / 2u, con.Height() / 2u };
+		win.SetDefaultBgColor(Window::Color::Blue);
+		win.Clear();
 
 		struct coord
 		{
@@ -24,18 +24,7 @@ int main()
 		coord player = { 10.0f,5.0f };
 		coord speed = { 0.0f, 0.0f };
 
-		CHAR_INFO bg{};
-		char_info::set(bg, L' ', char_info::Color::DarkBlue);
-		
-		CHAR_INFO pl{};
-		char_info::set(pl, L' ', char_info::Color::Green);
-
-
-		for (size_t i = 0u; i < size_t(size.X) * size.Y; ++i)
-			buffer[i] = bg;
-
-		buffer[int(player.Y) * size.X + int(player.X) * 2]		= pl;
-		buffer[int(player.Y) * size.X + int(player.X) * 2 + 1]	= pl;
+		win.Write(USHORT(player.X) * 2, USHORT(player.Y), L"  ", Window::Color::Green, Window::Color::Green);
 
 		while (!kbd.IsKeyPressedOnce(VK_ESCAPE))
 		{
@@ -69,8 +58,7 @@ int main()
 				speed.X *= 0.98f;
 			}
 
-			buffer[int(player.Y) * size.X + int(player.X) * 2]		= bg;
-			buffer[int(player.Y) * size.X + int(player.X) * 2 + 1]	= bg;
+			win.Write(USHORT(player.X) * 2, USHORT(player.Y), L"  ", Window::Color::Blue, Window::Color::Blue);
 
 			player.X += speed.X;
 			player.Y += speed.Y;
@@ -79,9 +67,9 @@ int main()
 				player.X = 0.0f;
 				speed.X = -speed.X;
 			}
-			else if (player.X >= (float)(size.X / 2))
+			else if (player.X >= (float)(win.Width() / 2))
 			{
-				player.X = float((size.X - 1) / 2);
+				player.X = float((win.Width() - 1) / 2);
 				speed.X = -speed.X;
 			}
 
@@ -90,21 +78,19 @@ int main()
 				player.Y = 0.0f;
 				speed.Y = -speed.Y;
 			}
-			else if (player.Y >= (float)size.Y)
+			else if (player.Y >= (float)win.Height())
 			{
-				player.Y = float(size.Y - 1);
+				player.Y = float(win.Height() - 1);
 				speed.Y = -speed.Y;
 			}
 
-			buffer[int(player.Y) * size.X + int(player.X) * 2]		= pl;
-			buffer[int(player.Y) * size.X + int(player.X) * 2 + 1]	= pl;
+			win.Write(USHORT(player.X) * 2, USHORT(player.Y), L"  ", Window::Color::Green, Window::Color::Green);
 
-			con.Draw(buffer, size, { 0,0 });
+			win.Render();
 
 			std::this_thread::sleep_for(10ms);
 		}
 
-		delete[] buffer;
 	}
 	catch (const std::exception& e)
 	{

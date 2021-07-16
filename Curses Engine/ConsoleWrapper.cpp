@@ -1,10 +1,43 @@
 #include "ConsoleWrapper.h"
 #include <cassert>
 
-Console::Console(char_count width,
-				char_count height, 
-				scrpx_count fontWidth, 
-				std::wstring_view title)
+Window::Buffer::Buffer(USHORT width, USHORT height)
+	: width{ width }, height{ height }
+	, data{ new CHAR_INFO[width * height] }
+{
+	Clear(Color::Black);
+}
+
+void Window::Buffer::Clear(Color c)
+{
+	for (unsigned i = 0u; i < USHORT(width * height); ++i)
+		char_info::set(data[i], L' ', c);
+}
+
+
+Window::Window(const Console& con, USHORT startX, USHORT startY, USHORT width, USHORT height)
+	: con{ con }
+	, startPos{ (SHORT)startX, (SHORT)startY }
+	, buf{ width, height }
+{
+	assert(startX + width <= con.Width());
+	assert(startY + height <= con.Height());
+}
+
+void Window::Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color bg)
+{
+	assert(x + text.size() <= Width());
+	for (unsigned i = 0; i < text.size(); ++i)
+		char_info::set(buf.At(x + i, y), text[i], fg, bg);
+}
+
+void Window::Render()
+{
+	con.Render(buf.Data(), buf.Size(), startPos);
+}
+
+
+Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_view title)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, width{ width }, height{ height }
 	, fontWidth{ fontWidth }
@@ -13,7 +46,7 @@ Console::Console(char_count width,
 	SetupConsole(false);
 }
 
-Console::Console(scrpx_count fontWidthPx, std::wstring_view title)
+Console::Console(px_count fontWidthPx, std::wstring_view title)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, width{ 0 }, height{ 0 }
 	, fontWidth{ fontWidthPx }
@@ -22,7 +55,7 @@ Console::Console(scrpx_count fontWidthPx, std::wstring_view title)
 	SetupConsole(true);
 }
 
-void Console::Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart)
+void Console::Render(const CHAR_INFO* buffer, COORD size, COORD drawStart) const
 {
 	assert(size.X <= width);
 	assert(size.Y <= height);
@@ -35,7 +68,7 @@ void Console::Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart)
 	assert(draw_region.Bottom < height);
 
 	if (WriteConsoleOutput(conOut, buffer, size, { 0,0 }, &draw_region) == 0)
-		THROW_CONSOLE_EXCEPTION("Draw", "failed to draw buffer");
+		THROW_CONSOLE_EXCEPTION("Render", "failed to draw buffer");
 }
 
 void Console::SetCursorMode(Cursor mode)
@@ -154,8 +187,8 @@ void Console::GetMonitorWorkAreaSize()
 	mi.cbSize = sizeof(mi);
 	if (GetMonitorInfoW(h_mon, &mi) == 0)
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to get monitor info");
-	workAreaWidth = scrpx_count(mi.rcWork.right - mi.rcWork.left);
-	workAreaHeight = scrpx_count(mi.rcWork.bottom - mi.rcWork.top);
+	workAreaWidth = px_count(mi.rcWork.right - mi.rcWork.left);
+	workAreaHeight = px_count(mi.rcWork.bottom - mi.rcWork.top);
 }
 
 void Console::SetupStyle()
@@ -191,8 +224,8 @@ void Console::CenterWindow()
 	win_info.cbSize = sizeof(win_info);
 	if (GetWindowInfo(hConsole, &win_info) == 0)
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to get window size");
-	scrpx_count width_px = scrpx_count(win_info.rcWindow.right - win_info.rcWindow.left);
-	scrpx_count height_px = scrpx_count(win_info.rcWindow.bottom - win_info.rcWindow.top);
+	px_count width_px = px_count(win_info.rcWindow.right - win_info.rcWindow.left);
+	px_count height_px = px_count(win_info.rcWindow.bottom - win_info.rcWindow.top);
 
 	SetWindowPos
 	(
@@ -203,3 +236,5 @@ void Console::CenterWindow()
 		SWP_NOSIZE									// do not change size (ignore two prev params)
 	);
 }
+
+
