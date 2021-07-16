@@ -37,16 +37,19 @@ public:
 	{
 		Write(x, y, text, col.fg, col.bg);
 	}
+	void WriteChar(USHORT x, USHORT y, wchar_t ch, Color fg, Color bg);
+	void WriteChar(USHORT x, USHORT y, wchar_t ch, ColorPair col) { WriteChar(x, y, ch, col.fg, col.bg); }
+	void DrawBox(Color c = Color::White);
 	void Render();
-	void Clear() { buf.Clear(defaultBg); }
-	void SetDefaultBgColor(Color c) { defaultBg = c; }
+	void Clear() { buf.Clear(bgColor); }
+	void SetDefaultBgColor(Color c) { bgColor = c; }
 	USHORT Width() const { return buf.Size().X; }
 	USHORT Height() const { return buf.Size().Y; }
 private:
 	const Console& con;
 	COORD startPos;
 	Buffer buf;
-	Color defaultBg = Color::Black;
+	Color bgColor = Color::Black;
 };
 
 class Console

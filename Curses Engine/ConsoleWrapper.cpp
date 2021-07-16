@@ -1,4 +1,4 @@
-#include "ConsoleWrapper.h"
+﻿#include "ConsoleWrapper.h"
 #include <cassert>
 
 Window::Buffer::Buffer(USHORT width, USHORT height)
@@ -27,8 +27,34 @@ Window::Window(const Console& con, USHORT startX, USHORT startY, USHORT width, U
 void Window::Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color bg)
 {
 	assert(x + text.size() <= Width());
+	assert(y < Height());
 	for (unsigned i = 0; i < text.size(); ++i)
 		char_info::set(buf.At(x + i, y), text[i], fg, bg);
+}
+
+void Window::WriteChar(USHORT x, USHORT y, wchar_t ch, Color fg, Color bg)
+{
+	assert(x < Width() && y < Height());
+	char_info::set(buf.At(x, y), ch, fg, bg);
+}
+
+void Window::DrawBox(Color c)
+{
+	WriteChar(0,				0,				L'┌', c, bgColor);
+	WriteChar(Width() - 1u,		0,				L'┐', c, bgColor);
+	WriteChar(0,				Height() - 1u,	L'└', c, bgColor);
+	WriteChar(Width() - 1u,		Height() - 1u,	L'┘', c, bgColor);
+	for (unsigned i = 1u; i < Width() - 1u; ++i)
+	{
+		WriteChar(i, 0, L'─', c, bgColor);
+		WriteChar(i, Height() - 1u, L'─', c, bgColor);
+	}
+
+	for (unsigned i = 1u; i < Height() - 1u; ++i)
+	{
+		WriteChar(0, i, L'│', c, bgColor);
+		WriteChar(Width() - 1u, i, L'│', c, bgColor);
+	}
 }
 
 void Window::Render()
