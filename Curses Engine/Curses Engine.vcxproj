@@ -160,13 +160,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleWrapper.cpp" />
-    <ClCompile Include="CursesWrapper.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConsoleWrapper.h" />
-    <ClInclude Include="CursesWrapper.h" />
     <ClInclude Include="ExceptionBase.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="StringTypedefs.h" />

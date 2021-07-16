@@ -17,6 +17,12 @@ public:
 		}
 	};
 public:
+	enum class Cursor
+	{
+		Full,
+		Underline,
+		Invisible
+	};
 	// conpx (console pixel) is two characters on the same line
 	// it is a square with a side of 2 * fontWidth
 	typedef uint16_t conpx_count;	// represents amount of conpx's
@@ -34,6 +40,7 @@ public:
 	Console& operator=(Console&&) = delete;
 	
 	void Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart);
+	void SetCursorMode(Cursor mode);
 public:
 	char_count Width() const { return width; }
 	char_count Height() const { return height; }
@@ -54,6 +61,7 @@ private:
 	scrpx_count fontWidth;
 	scrpx_count workAreaWidth = 1920u;
 	scrpx_count workAreaHeight = 1080u;
+	Cursor cursorMode = Cursor::Underline;
 private:
 	inline static size_t instances = 0u;
 };

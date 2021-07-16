@@ -6,6 +6,8 @@
 #include <atomic>
 #include <chrono>
 
+using namespace std::chrono_literals;
+
 class Keyboard
 {
 public:
@@ -22,6 +24,6 @@ private:
 	std::bitset<num_keys> was_pressed;
 	std::thread poll_thread;
 	mutable std::mutex m;
-	std::chrono::milliseconds polling_period = std::chrono::milliseconds(15u);
+	std::chrono::milliseconds polling_period = 15ms;
 	std::atomic_bool end_polling = false;
 };

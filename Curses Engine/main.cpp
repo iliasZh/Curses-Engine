@@ -1,83 +1,101 @@
-﻿#pragma comment(lib, "C:\\cpplibraries\\pdcurses.lib")
-
-#include "WindowsFunctionality.h"
+﻿#include "WindowsFunctionality.h"
 #include "ConsoleWrapper.h"
 #include "Keyboard.h"
 #include <iostream>
-
-using namespace std::chrono_literals;
 
 int main()
 {
 	try
 	{
-		Console con{ 8u };
+		Console con{ 10u };
 		Keyboard kbd{};
 
-		COORD size = { con.Width(), con.Height() };
+		con.SetCursorMode(Console::Cursor::Invisible);
+
+		COORD size = { (SHORT)con.Width(), (SHORT)con.Height() };
 		CHAR_INFO* buffer = new CHAR_INFO[size.X * size.Y];
 
-		COORD player = { 10,5 };
-		std::pair<float, float> speed;
+		struct coord
+		{
+			float X = 0.0f;
+			float Y = 0.0f;
+		};
+		coord player = { 10.0f,5.0f };
+		coord speed = { 0.0f, 0.0f };
 		CHAR_INFO bg{};
 		bg.Char.UnicodeChar = L' ';
 		bg.Attributes = 0x0001 | 0x0010;
 		CHAR_INFO pl{};
-		pl.Char.UnicodeChar = L'█';
-		pl.Attributes = 0x000A | 0x0000;
+		pl.Char.UnicodeChar = L' '; //█
+		pl.Attributes = 0x000A | 0x00A0;
 
 		for (size_t i = 0u; i < size_t(size.X) * size.Y; ++i)
 			buffer[i] = bg;
 
-		buffer[player.Y * size.X + player.X] = pl;
+		buffer[int(player.Y) * size.X + int(player.X) * 2]		= pl;
+		buffer[int(player.Y) * size.X + int(player.X) * 2 + 1]	= pl;
 
 		while (!kbd.IsKeyPressedOnce(VK_ESCAPE))
 		{
 			if (kbd.IsKeyPressed('W'))
 			{
-				if ((speed.second -= 0.3f) < -2.0f)
-					speed.second = -2.0f;
+				if ((speed.Y -= 0.15f) < -1.0f)
+					speed.Y = -1.0f;
 			}
 			else if (kbd.IsKeyPressed('S'))
 			{
-				if ((speed.second += 0.3f) > +2.0f)
-					speed.second = +2.0f;
+				if ((speed.Y += 0.15f) > +1.0f)
+					speed.Y = +1.0f;
 			}
 			else
 			{
-				speed.second *= 0.95f;
+				speed.Y *= 0.98f;
 			}
 
 			if (kbd.IsKeyPressed('A'))
 			{
-				if ((speed.first -= 0.3f) < -4.0f)
-					speed.first = -4.0f;
+				if ((speed.X -= 0.15f) < -1.0f)
+					speed.X = -1.0f;
 			}
 			else if (kbd.IsKeyPressed('D'))
 			{
-				if ((speed.first += 0.3f) > +4.0f)
-					speed.first = +4.0f;
+				if ((speed.X += 0.15f) > +1.0f)
+					speed.X = +1.0f;
 			}
 			else
 			{
-				speed.first *= 0.95f;
+				speed.X *= 0.98f;
 			}
 
-			buffer[player.Y * size.X + player.X] = bg;
+			buffer[int(player.Y) * size.X + int(player.X) * 2]		= bg;
+			buffer[int(player.Y) * size.X + int(player.X) * 2 + 1]	= bg;
 
-			player.X += SHORT(speed.first);
-			player.Y += SHORT(speed.second);
-			if (player.X < 0)
-				player.X = (size.X - 1);
-			else if (player.X >= size.X)
-				player.X = 0;
+			player.X += speed.X;
+			player.Y += speed.Y;
+			if (player.X < 0.0f)
+			{
+				player.X = 0.0f;
+				speed.X = -speed.X;
+			}
+			else if (player.X >= (float)(size.X / 2))
+			{
+				player.X = float((size.X - 1) / 2);
+				speed.X = -speed.X;
+			}
 
-			if (player.Y < 0)
-				player.Y = (size.Y - 1);
-			else if (player.Y >= size.Y)
-				player.Y = 0;
+			if (player.Y < 0.0f)
+			{
+				player.Y = 0.0f;
+				speed.Y = -speed.Y;
+			}
+			else if (player.Y >= (float)size.Y)
+			{
+				player.Y = float(size.Y - 1);
+				speed.Y = -speed.Y;
+			}
 
-			buffer[player.Y * size.X + player.X] = pl;
+			buffer[int(player.Y) * size.X + int(player.X) * 2]		= pl;
+			buffer[int(player.Y) * size.X + int(player.X) * 2 + 1]	= pl;
 
 			con.Draw(buffer, size, { 0,0 });
 

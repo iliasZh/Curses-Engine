@@ -24,7 +24,6 @@ Console::Console(scrpx_count fontWidthPx, std::wstring_view title)
 
 void Console::Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart)
 {
-	assert(conOut != INVALID_HANDLE_VALUE);
 	assert(size.X <= width);
 	assert(size.Y <= height);
 	SMALL_RECT draw_region = 
@@ -39,6 +38,29 @@ void Console::Draw(const CHAR_INFO* buffer, COORD size, COORD drawStart)
 		THROW_CONSOLE_EXCEPTION("Draw", "failed to draw buffer");
 }
 
+void Console::SetCursorMode(Cursor mode)
+{
+	cursorMode = mode;
+	CONSOLE_CURSOR_INFO info{};
+	info.bVisible = (cursorMode != Cursor::Invisible);
+	switch (cursorMode)
+	{
+	case Cursor::Invisible:
+	case Cursor::Underline:
+		info.dwSize = 1;
+		break;
+	case Cursor::Full:
+		info.dwSize = 100;
+		break;
+	default:
+		THROW_CONSOLE_EXCEPTION("SetCursorMode", "Invalid cursor mode");
+		break;
+	}
+
+	if (SetConsoleCursorInfo(conOut, &info) == 0)
+		THROW_CONSOLE_EXCEPTION("SetCursorMode", "failed to set cursor mode");
+}
+
 void Console::SetupConsole(bool maxSize)
 {
 	// sanity check
@@ -46,6 +68,8 @@ void Console::SetupConsole(bool maxSize)
 
 	if (conOut == INVALID_HANDLE_VALUE)
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");
+
+	SetCursorMode(cursorMode);
 
 	SetupFont();
 
