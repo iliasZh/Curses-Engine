@@ -1,6 +1,7 @@
 ﻿#include "WindowsFunctionality.h"
 #include "ConsoleWrapper.h"
 #include "Keyboard.h"
+#include "CharInfo.h"
 #include <iostream>
 
 int main()
@@ -22,12 +23,13 @@ int main()
 		};
 		coord player = { 10.0f,5.0f };
 		coord speed = { 0.0f, 0.0f };
+
 		CHAR_INFO bg{};
-		bg.Char.UnicodeChar = L' ';
-		bg.Attributes = 0x0001 | 0x0010;
+		char_info::set(bg, L' ', char_info::Color::DarkBlue);
+		
 		CHAR_INFO pl{};
-		pl.Char.UnicodeChar = L' '; //█
-		pl.Attributes = 0x000A | 0x00A0;
+		char_info::set(pl, L' ', char_info::Color::Green);
+
 
 		for (size_t i = 0u; i < size_t(size.X) * size.Y; ++i)
 			buffer[i] = bg;
