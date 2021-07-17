@@ -1,44 +1,280 @@
-#include "ConsoleWrapper.h"
+﻿#include "ConsoleWrapper.h"
 #include <cassert>
 
-Console::Console(scrpx_count fontWidth, std::wstring_view title)
-	: consoleHandle{ GetStdHandle(STD_OUTPUT_HANDLE) }
+Window::Buffer::Buffer(USHORT width, USHORT height)
+	: width{ width }, height{ height }
+	, data{ nullptr }
+{
+	if (width == 0u || height == 0u)
+		THROW_CONSOLE_EXCEPTION("Buffer ctor", "attempting to allocate zero-size buffer");
+	data = new CHAR_INFO[width * height];
+	Clear(Color::Black);
+}
+
+Window::Buffer::Buffer(Buffer&& buf) noexcept
+	: width{ buf.width }, height{ buf.height }
+	, data{ buf.data }
+{
+	buf.data = nullptr;
+}
+
+Window::Buffer& Window::Buffer::operator=(Buffer&& buf) noexcept
+{
+	if (this != &buf)
+	{
+		delete[] data;
+		width = buf.width;
+		height = buf.height;
+		data = buf.data;
+		buf.data = nullptr;
+	}
+	return *this;
+}
+
+
+CHAR_INFO& Window::Buffer::At(USHORT x, USHORT y)
+{
+	assert(x < width&& y < height);
+	return data[y * width + x];
+}
+
+void Window::Buffer::Clear(Color c)
+{
+	for (unsigned i = 0u; i < USHORT(width * height); ++i)
+		char_info::set(data[i], L' ', c);
+}
+
+
+Window::Window(const Console& con, USHORT startX, USHORT startY, USHORT width, USHORT height)
+	: con{ con }
+	, startPos{ (SHORT)startX, (SHORT)startY }
+	, buf{ width, height }
+{
+	assert(con.IsInitialized());
+	assert(width > 1u && height > 1u);
+	assert(startX + width <= con.Width());
+	assert(startY + height <= con.Height());
+}
+
+Window::Window(Window&& win) noexcept
+	: con{ win.con }
+	, startPos{ win.startPos }
+	, buf{ std::move(win.buf) }
+	, bgColor{ win.bgColor }
+{
+	Clear();
+}
+
+Window& Window::operator=(Window&& win) noexcept
+{
+	if (this != &win)
+	{
+		assert(&con == &win.con); // console is a singleton, so it *should* be ok, but still ugh
+		startPos = win.startPos;
+		bgColor = win.bgColor;
+		buf = std::move(win.buf);
+		Clear();
+	}
+	return *this;
+}
+
+void Window::Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color bg)
+{
+	assert(x + text.size() <= Width());
+	assert(y < Height());
+	for (unsigned i = 0; i < text.size(); ++i)
+		char_info::set(buf.At(x + i, y), text[i], fg, bg);
+}
+
+void Window::WriteChar(USHORT x, USHORT y, wchar_t ch, Color fg, Color bg)
+{
+	assert(x < Width() && y < Height());
+	char_info::set(buf.At(x, y), ch, fg, bg);
+}
+
+void Window::DrawBox(Color c)
+{
+	WriteChar(0,				0,				L'┌', c, bgColor);
+	WriteChar(Width() - 1u,		0,				L'┐', c, bgColor);
+	WriteChar(0,				Height() - 1u,	L'└', c, bgColor);
+	WriteChar(Width() - 1u,		Height() - 1u,	L'┘', c, bgColor);
+	for (unsigned i = 1u; i < Width() - 1u; ++i)
+	{
+		WriteChar(i, 0, L'─', c, bgColor);
+		WriteChar(i, Height() - 1u, L'─', c, bgColor);
+	}
+
+	for (unsigned i = 1u; i < Height() - 1u; ++i)
+	{
+		WriteChar(0, i, L'│', c, bgColor);
+		WriteChar(Width() - 1u, i, L'│', c, bgColor);
+	}
+}
+
+void Window::Render()
+{
+	con.Render(buf.Data(), buf.Size(), startPos);
+}
+
+
+Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_view title)
+	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
+	, width{ width }, height{ height }
 	, fontWidth{ fontWidth }
 	, title{ title }
+	, pStdwin{}
 {
-	// title setup
+	SetupConsole(false);
+}
 
 	// sanity check
 	assert(++instances == 1);
-	static_assert(widthConPx <= 60u && heightConPx <= 30u);
-	static_assert(widthConPx <= heightConPx * maxAspectRatio);
+	assert(widthConPx <= heightConPx * maxAspectRatio);
+	assert(widthConPx <= 60u && heightConPx <= 30u);
 
-	std::wstring setup = L"Curses Engine Setup...";
-	SetConsoleTitle(setup.c_str()); // set a special title to get a HWND to the console
-	Sleep(50); // wait some milliseconds for title to be set...
+void Console::Render(const CHAR_INFO* buffer, COORD size, COORD drawStart) const
+{
+	assert(size.X <= width);
+	assert(size.Y <= height);
+	SMALL_RECT draw_region = 
+	{ 
+		drawStart.X, drawStart.Y, 
+		drawStart.X + size.X - 1, drawStart.Y + size.Y - 1
+	};
+	assert(draw_region.Right < width);
+	assert(draw_region.Bottom < height);
 
-	if ((hConsole = FindWindow(NULL, setup.c_str())) == NULL)
+	if (WriteConsoleOutput(conOut, buffer, size, { 0,0 }, &draw_region) == 0)
+		THROW_CONSOLE_EXCEPTION("Render", "failed to draw buffer");
+}
+
+void Console::SetCursorMode(Cursor mode)
+{
+	cursorMode = mode;
+	CONSOLE_CURSOR_INFO info{};
+	info.bVisible = (cursorMode != Cursor::Invisible);
+	switch (cursorMode)
 	{
-		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
+	case Cursor::Invisible:
+	case Cursor::Underline:
+		info.dwSize = 1;
+		break;
+	case Cursor::Full:
+		info.dwSize = 100;
+		break;
+	default:
+		THROW_CONSOLE_EXCEPTION("SetCursorMode", "Invalid cursor mode");
+		break;
 	}
 
-	SetConsoleTitle(this->title.c_str()); // set requested title
+	if (SetConsoleCursorInfo(conOut, &info) == 0)
+		THROW_CONSOLE_EXCEPTION("SetCursorMode", "failed to set cursor mode");
+}
+
+	SetConsoleTitle(title.c_str()); // set requested title
 	// title setup END
 
+	if (conOut == INVALID_HANDLE_VALUE)
+		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");
 
-	// screen dimensions lookup
+	SetCursorMode(cursorMode);
+
+	SetupFont();
+
+	SetupScreenBuffer(maxSize);
+
+	SetTitleAndGetHwnd();
+
+	GetMonitorWorkAreaSize();
+
+	SetupStyle();
+
+	CenterWindow();
+
+	// sanity check
+	assert(++instances == 1u);
+
+	pStdwin = std::make_unique<Window>(*this, 0u, 0u, Width(), Height());
+}
+
+void Console::SetupFont()
+{
+	SHORT font_w = fontWidth;
+	SHORT font_h = font_w * 2;
+
+	CONSOLE_FONT_INFOEX cfi;
+	cfi.cbSize = sizeof(cfi);
+	cfi.nFont = 0;
+	cfi.dwFontSize = { font_w, font_h };
+	cfi.FontFamily = FF_DONTCARE;
+	cfi.FontWeight = FW_NORMAL;
+	wcscpy_s(cfi.FaceName, L"Consolas");
+
+	if (SetCurrentConsoleFontEx(conOut, FALSE, &cfi) == NULL)
+		THROW_CONSOLE_EXCEPTION("Console contrustor", "failed to set the font size");
+
+	Sleep(50);	// wait a bit for changes to apply...
+}
+
+void Console::SetupScreenBuffer(bool maxSize)
+{
+	auto [max_w, max_h] = GetLargestConsoleWindowSize(conOut);
+	if (maxSize)
+	{
+		width = max_w;
+		height = max_h;
+	}
+	else
+	{
+		// check that the user requested a reasonable size
+		assert(width <= max_w && height <= max_h);
+	}
+
+	// at any time console window size must not exceed the size of console screen buffer
+	// for that reason
+	// set window size to minimum so that it is possible to set screen buffer size w/o problem
+	SMALL_RECT r{ 0,0,1,1 };
+	if (SetConsoleWindowInfo(conOut, TRUE, &r) == 0)
+		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to (temporarily) set console window size to 1*1");
+
+	COORD c{ (SHORT)width, (SHORT)height };
+	if (SetConsoleScreenBufferSize(conOut, c) == 0)
+		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to set requested console screen buffer size");
+
+	r = { 0,0,SHORT(width - 1),SHORT(height - 1) };
+	if (SetConsoleWindowInfo(conOut, TRUE, &r) == 0)
+		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to set requested console window size");
+}
+
+void Console::SetTitleAndGetHwnd()
+{
+	std::wstring_view setup = L"Console engine setup...";
+	SetConsoleTitle(setup.data()); // set a special title to get a HWND to the console
+	Sleep(50); // wait some milliseconds for title to be set...
+
+	if ((hConsole = FindWindow(NULL, setup.data())) == NULL)
+		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
+
+	SetConsoleTitle(title.data()); // set requested title
+}
+
+void Console::GetMonitorWorkAreaSize()
+{
+	assert(hConsole != NULL);
+
 	HMONITOR h_mon = MonitorFromWindow(hConsole, MONITOR_DEFAULTTOPRIMARY);
 	MONITORINFO mi{};
 	mi.cbSize = sizeof(mi);
-	if (GetMonitorInfoW(h_mon, &mi) != NULL)
-	{
-		screenWidth = scrpx_count(mi.rcMonitor.right - mi.rcMonitor.left);
-		screenHeight = scrpx_count(mi.rcMonitor.bottom - mi.rcMonitor.top);
-	}
-	// screen dimensions lookup END
+	if (GetMonitorInfoW(h_mon, &mi) == 0)
+		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to get monitor info");
+	workAreaWidth = px_count(mi.rcWork.right - mi.rcWork.left);
+	workAreaHeight = px_count(mi.rcWork.bottom - mi.rcWork.top);
+}
 
+void Console::SetupStyle()
+{
+	assert(hConsole != NULL);
 
-	// window style setup
 	LONG console_style;
 	console_style = GetWindowLong(hConsole, GWL_STYLE); // get window style
 
@@ -46,67 +282,39 @@ Console::Console(scrpx_count fontWidth, std::wstring_view title)
 		console_style ^= WS_SIZEBOX;		// set to false
 	if (console_style & WS_MAXIMIZEBOX)	// do not allow to maximize window
 		console_style ^= WS_MAXIMIZEBOX;	// set to false
-
 	SetWindowLong(hConsole, GWL_STYLE, console_style);	// set the new style
-	// window style setup END
-
-
-	// window screen buffer setup
-	SMALL_RECT r;
-	r.Left = 0;
-	r.Top = 0;
-	r.Right = width - 1;
-	r.Bottom = height - 1;
-	SetConsoleWindowInfo(consoleHandle, TRUE, &r);
 	
-	COORD c;
-	c.X = width;
-	c.Y = height;
-	SetConsoleScreenBufferSize(consoleHandle, c);
-	// window screen buffer setup END
+	// MSDN:
+	// If you have changed certain window data using SetWindowLong,
+	// you must call SetWindowPos for the changes to take effect.
+	// Use the following combination for uFlags:
+	// SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED.
+	SetWindowPos
+	(
+		hConsole, HWND_TOP, 0, 0, 0, 0, 
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
+	);
+}
 
+void Console::CenterWindow()
+{
+	assert(hConsole != NULL);
 
-	// font setup
-	scrpx_count max_font_w = 
-		std::min(scrpx_count(screenWidth  / width),
-				 scrpx_count(screenHeight / (height * 2u)));
-	max_font_w = std::min(scrpx_count(maxWidth / width), max_font_w);
-	SHORT font_w = std::min(scrpx_count(fontWidth + 1u), max_font_w);
-	// PDCurses seems to only take font height into account (?)
-	// aspect ratio for a character is always w:h == 1:2 - not true actually, but almost
-	SHORT font_h = font_w * 2;
-
-	CONSOLE_FONT_INFOEX cfi;
-	cfi.cbSize = sizeof(cfi);
-	cfi.nFont = 0;
-	cfi.dwFontSize.X = font_w;
-	cfi.dwFontSize.Y = font_h;
-	cfi.FontFamily = FF_DONTCARE;
-	cfi.FontWeight = FW_NORMAL;
-	wcscpy_s(cfi.FaceName, L"Consolas");
-	if (SetCurrentConsoleFontEx(consoleHandle, FALSE, &cfi) == NULL)
-	{
-		THROW_CONSOLE_EXCEPTION("Console contrustor, SetCurrentConsoleFontEx()",
-			"failed to set the font size");
-	}
-	Sleep(50);	// wait a bit for changes to apply...
-	// font setup END
-
-
-	// window size setup
 	WINDOWINFO win_info;
 	win_info.cbSize = sizeof(win_info);
-	GetWindowInfo(hConsole, &win_info);
-	scrpx_count widthPx		= scrpx_count(win_info.rcWindow.right  - win_info.rcWindow.left);
-	scrpx_count heightPx	= scrpx_count(win_info.rcWindow.bottom - win_info.rcWindow.top);
+	if (GetWindowInfo(hConsole, &win_info) == 0)
+		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to get window size");
+	px_count width_px = px_count(win_info.rcWindow.right - win_info.rcWindow.left);
+	px_count height_px = px_count(win_info.rcWindow.bottom - win_info.rcWindow.top);
 
 	SetWindowPos
 	(
 		hConsole, HWND_TOP,
-		(screenWidth - widthPx) / 2u,
-		(screenHeight - heightPx) / 2u,
-		widthPx, heightPx,
-		SWP_NOSIZE // do not change size (ignore two prev params)
+		((int)workAreaWidth - (int)width_px) / 2,	// may be negative! only slightly though
+		((int)workAreaHeight - (int)height_px) / 2,	// may be negative! only slightly though
+		width_px, height_px,
+		SWP_NOSIZE									// do not change size (ignore two prev params)
 	);
-	// window size setup END
 }
+
+

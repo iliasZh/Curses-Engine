@@ -160,26 +160,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleWrapper.cpp" />
-    <ClCompile Include="CursesWrapper.cpp" />
-    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CommonExpressions.h" />
     <ClInclude Include="ConsoleWrapper.h" />
-    <ClInclude Include="Controls.h" />
     <ClInclude Include="CursesWrapper.h" />
     <ClInclude Include="ExceptionBase.h" />
-    <ClInclude Include="Expression.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GlobalParameters.h" />
-    <ClInclude Include="Keyboard.h" />
-    <ClInclude Include="Menu.h" />
-    <ClInclude Include="RandomNumberGenerator.h" />
-    <ClInclude Include="Screen.h" />
     <ClInclude Include="StringTypedefs.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />

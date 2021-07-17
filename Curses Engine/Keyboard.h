@@ -7,6 +7,8 @@
 #include <atomic>
 #include <chrono>
 
+using namespace std::chrono_literals;
+
 class Keyboard
 {
 public:

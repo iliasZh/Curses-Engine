@@ -1,60 +1,99 @@
-﻿#pragma comment(lib, "C:\\cpplibraries\\pdcurses.lib")
+﻿
 
-#include "Game.h"
-#include "Menu.h"
-#include "Screen.h"
-#include "Timer.h"
+#include "WindowsFunctionality.h"
+#include "ConsoleWrapper.h"
 
 int main()
 {
-	//Game game;
-	Console con;
-	Curses cs;
-	Keyboard kbd;
-
-	cs.SetEchoMode(false);
-	cs.SetCursorMode(Curses::CursorMode::Invisible);
-
-	Screen scr{0,0,60,30};
-
-	struct Coord
+	try
 	{
-		int x;
-		int y;
-	};
-	Coord plr{ 0,0 };
-	Coord dir{ 1,0 };
-	Timer t{};
-	while (true)
-	{
-		t.Mark();
-		if (kbd.IsBindingPressedOnce(Controls::Right))
+		Console con{ 10u };
+		con.SetCursorMode(Console::Cursor::Invisible);
+		Keyboard kbd{};
+
+		con.Stdwin().SetDefaultBgColor(Window::Color::DarkBlue);
+		con.Stdwin().Clear();
+		//win.DrawBox();
+
+		struct coord
 		{
-			dir = { 1,0 };
-		}
-		else if (kbd.IsBindingPressedOnce(Controls::Left))
+			float X = 0.0f;
+			float Y = 0.0f;
+		};
+		coord player = { (float)con.Stdwin().Width() / 4.0f, (float)con.Stdwin().Height() / 2.0f };
+		coord speed = { 0.0f, 0.0f };
+
+		con.Stdwin().Write(USHORT(player.X) * 2u, USHORT(player.Y), L"  ", Window::Color::Red, Window::Color::Red);
+
+		while (!kbd.IsKeyPressedOnce(VK_ESCAPE))
 		{
-			dir = { -1,0 };
-		}
-		if (kbd.IsBindingPressedOnce(Controls::Up))
-		{
-			dir = { 0,-1 };
-		}
-		else if (kbd.IsBindingPressedOnce(Controls::Down))
-		{
-			dir = { 0,1 };
+			if (kbd.IsKeyPressed('W'))
+			{
+				if ((speed.Y -= 0.15f) < -2.0f)
+					speed.Y = -2.0f;
+			}
+			else if (kbd.IsKeyPressed('S'))
+			{
+				if ((speed.Y += 0.15f) > +2.0f)
+					speed.Y = +2.0f;
+			}
+			else
+			{
+				speed.Y *= 0.98f;
+			}
+
+			if (kbd.IsKeyPressed('A'))
+			{
+				if ((speed.X -= 0.15f) < -2.0f)
+					speed.X = -2.0f;
+			}
+			else if (kbd.IsKeyPressed('D'))
+			{
+				if ((speed.X += 0.15f) > +2.0f)
+					speed.X = +2.0f;
+			}
+			else
+			{
+				speed.X *= 0.98f;
+			}
+
+			con.Stdwin().Write(USHORT(player.X) * 2u, USHORT(player.Y), L"  ", Window::Color::DarkBlue, Window::Color::DarkBlue);
+
+			player.X += speed.X;
+			player.Y += speed.Y;
+			if (player.X < 0.0f)
+			{
+				player.X = 0.0f;
+				speed.X = -speed.X;
+			}
+			else if (player.X >= float((con.Stdwin().Width() - 1u) / 2))
+			{
+				player.X = float((con.Stdwin().Width() - 1u) / 2);
+				speed.X = -speed.X;
+			}
+
+			if (player.Y < 0.0f)
+			{
+				player.Y = 0.0f;
+				speed.Y = -speed.Y;
+			}
+			else if (player.Y >= float(con.Stdwin().Height() - 1u))
+			{
+				player.Y = float(con.Stdwin().Height() - 1u);
+				speed.Y = -speed.Y;
+			}
+
+			con.Stdwin().Write(USHORT(player.X) * 2u, USHORT(player.Y), L"  ", Window::Color::Red, Window::Color::Red);
+
+			con.Stdwin().Render();
+
+			std::this_thread::sleep_for(10ms);
 		}
 
-		scr.PutPixel(plr.x, plr.y, Curses::Color::Black);
-
-		plr.x += dir.x;
-		plr.y += dir.y;
-
-		scr.PutPixel(plr.x, plr.y, Curses::Color::Red);
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(int(100.0f - t.Peek())));
-		scr.Draw();
 	}
-
+	catch (const std::exception& e)
+	{
+		std::cout << e.what();
+	}
 	return 0;
 }

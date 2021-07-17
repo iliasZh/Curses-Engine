@@ -1,5 +1,7 @@
 #pragma once
 
+#include "StringTypedefs.h"
+
 #include <string>
 #include <utility>
 #include <algorithm>
