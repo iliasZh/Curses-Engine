@@ -81,11 +81,10 @@ public:
 	};
 	typedef uint16_t px_count;	// represents amount of actual screen pixels
 
-	Console(USHORT width,
-			USHORT height, 
+	Console(USHORT width, USHORT height, 
 			px_count fontWidthPx = 15u,
-			std::wstring_view title = L"WinCon Engine by Ilias");
-	Console(px_count fontWidthPx = 15u, std::wstring_view title = L"WinCon Engine by Ilias");
+			std::wstring_view title = L"Console Engine by Ilias");
+	Console(px_count fontWidthPx = 15u, std::wstring_view title = L"Console Engine by Ilias");
 	Console(const Console&) = delete;
 	Console(Console&&) = delete;
 	Console& operator=(const Console&) = delete;

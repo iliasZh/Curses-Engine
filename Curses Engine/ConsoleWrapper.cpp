@@ -3,8 +3,11 @@
 
 Window::Buffer::Buffer(USHORT width, USHORT height)
 	: width{ width }, height{ height }
-	, data{ new CHAR_INFO[width * height] }
+	, data{ nullptr }
 {
+	if (width == 0u || height == 0u)
+		THROW_CONSOLE_EXCEPTION("Buffer ctor", "attempting to allocate zero-size buffer");
+	data = new CHAR_INFO[width * height];
 	Clear(Color::Black);
 }
 
@@ -48,6 +51,7 @@ Window::Window(const Console& con, USHORT startX, USHORT startY, USHORT width, U
 	, buf{ width, height }
 {
 	assert(con.IsInitialized());
+	assert(width > 1u && height > 1u);
 	assert(startX + width <= con.Width());
 	assert(startY + height <= con.Height());
 }
