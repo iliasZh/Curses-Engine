@@ -109,7 +109,7 @@ struct LayoutDesc
 		TopRight,
 		BottomRight
 	};
-	LayoutDesc(Pos pos = Pos::Centered, char_count marginHoriz = 3u, char_count marginVert = 0u)
+	LayoutDesc(Pos pos = Pos::Centered, char_count marginHoriz = 1u, char_count marginVert = 0u)
 		: pos{ pos }, marginHoriz{ marginHoriz }, marginVert{ marginVert }
 	{}
 	Pos Positioning() const { return pos; }
