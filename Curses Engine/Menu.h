@@ -1,12 +1,12 @@
 #pragma once
 
 #include "ExceptionBase.h"
-#include "CursesWrapper.h"
 #include "Keyboard.h"
 #include "Utilities.h"
 #include "GlobalParameters.h"
 #include "Expression.h"
 #include "CommonExpressions.h"
+#include "ConsoleWrapper.h"
 #include <vector>
 #include <memory>
 #include <queue>
@@ -15,17 +15,17 @@ class Entry
 {
 public:
 	using AbstractOptions = std::vector<Expression>;
-	using Options = std::vector<u8str_view>;
+	using Options = std::vector<std::wstring_view>;
 	Entry(Expression name) : name{ name } {}
 	virtual ~Entry() = 0;
-	u8str_view Name(Lang lang) const { return name[lang]; }
+	std::wstring_view Name(Lang lang) const { return name[lang]; }
 	virtual bool IsClosing() const { return false; }
 	virtual int Next(bool) const { return -1; }
 	virtual int Prev(bool) const { return -1; }
 	bool HasOptions() const { return CurrentOptionIndex() != -1; }
 	virtual Options GetOptions(Lang lang) const { return {}; }
 	virtual int CurrentOptionIndex() const { return -1; }
-	virtual u8str_view CurrentOption(Lang lang) const { return u8""; }
+	virtual std::wstring_view CurrentOption(Lang lang) const { return L""; }
 protected:
 	Expression name;
 };
@@ -71,7 +71,7 @@ public:
 		return opts_ret;
 	}
 	int CurrentOptionIndex() const override { return currOpt; }
-	u8str_view CurrentOption(Lang lang) const override { return opts[currOpt][lang]; }
+	std::wstring_view CurrentOption(Lang lang) const override { return opts[currOpt][lang]; }
 private:
 	AbstractOptions opts;
 	mutable int currOpt;
@@ -124,7 +124,7 @@ private:
 struct MenuPalette
 {
 private:
-	using Color = Curses::Color;
+	using Color = Window::Color;
 public:
 	Color baseBg			= Color::Black;
 	Color entrySelectBg		= Color::Blue;
@@ -138,19 +138,17 @@ public:
 class Menu
 {
 public:
-	using Color = Curses::Color;
-	using Window = Curses::Window;
-	using ucoord = Window::ucoord;
+	using Color = Window::Color;
+	using ucoord = USHORT;
 	Menu(const Window& win, Keyboard& kbd, Expression title,
 		EntryList entryList, LayoutDesc ld = {}, MenuPalette mp = {});
 	virtual ~Menu() = default;
-	void Touch() const;
 	void Refresh() const;
 	void Listen();
 
 	// overriden by user!
-	virtual void OnSelect(u8str_view name)					= 0;
-	virtual void OnSwitch(u8str_view name, u8str_view opt)	= 0;
+	virtual void OnSelect(std::wstring_view name)							= 0;
+	virtual void OnSwitch(std::wstring_view name, std::wstring_view opt)	= 0;
 
 public: // getters/setters
 	bool IsLooping() const { return loopEntryList; }
@@ -175,8 +173,8 @@ private:
 	int PrevEntry();
 	bool SwitchLeft();
 	bool SwitchRight();
-	u8str TitleToString() const;
-	u8str EntryToString(size_t i) const;
+	std::wstring TitleToString() const;
+	std::wstring EntryToString(size_t i) const;
 public:
 	class Exception : public ExceptionBase
 	{
@@ -197,7 +195,7 @@ private:
 	Expression title;
 	EntryList entryList;
 	LayoutDesc layoutDesc;
-	u8str separatorLine{};
+	std::wstring separatorLine{};
 	int currEntryIndex;
 	bool loopEntryList = false;
 	bool loopSwitches = false;

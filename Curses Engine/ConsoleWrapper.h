@@ -46,10 +46,12 @@ public:
 	{
 		WriteChar(x, y, ch, col.fg, col.bg);
 	}
-	void DrawBox(Color c = Color::White);
-	void Render();
+	void DrawBox(Color fg, Color bg);
+	void DrawBox(Color c) { DrawBox(c, bgColor); }
+	void Render() const;
 	void Clear() { buf.Clear(bgColor); }
 	void SetDefaultBgColor(Color c) { bgColor = c; }
+	const Console& GetConsole() const { return con; }
 	USHORT Width() const { return buf.Size().X; }
 	USHORT Height() const { return buf.Size().Y; }
 private:

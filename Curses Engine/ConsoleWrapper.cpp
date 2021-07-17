@@ -92,26 +92,26 @@ void Window::WriteChar(USHORT x, USHORT y, wchar_t ch, Color fg, Color bg)
 	char_info::set(buf.At(x, y), ch, fg, bg);
 }
 
-void Window::DrawBox(Color c)
+void Window::DrawBox(Color fg, Color bg)
 {
-	WriteChar(0,				0,				L'┌', c, bgColor);
-	WriteChar(Width() - 1u,		0,				L'┐', c, bgColor);
-	WriteChar(0,				Height() - 1u,	L'└', c, bgColor);
-	WriteChar(Width() - 1u,		Height() - 1u,	L'┘', c, bgColor);
+	WriteChar(0,				0,				L'┌', fg, bg);
+	WriteChar(Width() - 1u,		0,				L'┐', fg, bg);
+	WriteChar(0,				Height() - 1u,	L'└', fg, bg);
+	WriteChar(Width() - 1u,		Height() - 1u,	L'┘', fg, bg);
 	for (unsigned i = 1u; i < Width() - 1u; ++i)
 	{
-		WriteChar(i, 0, L'─', c, bgColor);
-		WriteChar(i, Height() - 1u, L'─', c, bgColor);
+		WriteChar(i, 0, L'─', fg, bg);
+		WriteChar(i, Height() - 1u, L'─', fg, bg);
 	}
 
 	for (unsigned i = 1u; i < Height() - 1u; ++i)
 	{
-		WriteChar(0, i, L'│', c, bgColor);
-		WriteChar(Width() - 1u, i, L'│', c, bgColor);
+		WriteChar(0, i, L'│', fg, bg);
+		WriteChar(Width() - 1u, i, L'│', fg, bg);
 	}
 }
 
-void Window::Render()
+void Window::Render() const
 {
 	con.Render(buf.Data(), buf.Size(), startPos);
 }
@@ -127,10 +127,15 @@ Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_v
 	SetupConsole(false);
 }
 
-	// sanity check
-	assert(++instances == 1);
-	assert(widthConPx <= heightConPx * maxAspectRatio);
-	assert(widthConPx <= 60u && heightConPx <= 30u);
+Console::Console(px_count fontWidth, std::wstring_view title)
+	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
+	, width{ 0u }, height{ 0u }
+	, fontWidth{ fontWidth }
+	, title{ title }
+	, pStdwin{}
+{
+	SetupConsole(true);
+}
 
 void Console::Render(const CHAR_INFO* buffer, COORD size, COORD drawStart) const
 {
@@ -171,8 +176,11 @@ void Console::SetCursorMode(Cursor mode)
 		THROW_CONSOLE_EXCEPTION("SetCursorMode", "failed to set cursor mode");
 }
 
-	SetConsoleTitle(title.c_str()); // set requested title
-	// title setup END
+
+void Console::SetupConsole(bool maxSize)
+{
+	// sanity check
+	assert(instances == 0u);
 
 	if (conOut == INVALID_HANDLE_VALUE)
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");

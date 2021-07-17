@@ -1,27 +1,23 @@
 ﻿#pragma once
 
 #include "ConsoleWrapper.h"
-#include "CursesWrapper.h"
 
-class Screen : public Curses::Window
+class Screen : public Window
 {
 public:
-	using Curses::Window::ucoord;
-	using Color = Curses::Color;
-	Screen(ucoord startX, ucoord startY, ucoord widthPx, ucoord heightPx)
-		: Curses::Window{ startX, startY, widthPx * 2u, heightPx }
-	{
-		assert(heightPx <= Console::heightConPx);
-		assert(widthPx <= Console::widthConPx);
-	}
+	using ucoord = USHORT;
+	using Color = Window::Color;
+	Screen(const Console& con, ucoord startX, ucoord startY, ucoord widthPx, ucoord heightPx)
+		: Window{ con, startX, startY, widthPx * 2u, heightPx }
+	{}
 	ucoord WidthPx() { return Width(); }
 	ucoord HeightPx() { return Height() * 2u; }
 	void PutPixel(ucoord x, ucoord y, Color c)
 	{
-		Write(x * 2u, y, u8"  ", c, c);
+		Write(x * 2u, y, L"  ", c, c);
 	}
 	void Draw()
 	{
-		Refresh();
+		Render();
 	}
 };

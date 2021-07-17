@@ -1,6 +1,6 @@
 #include "Game.h"
 
-Game::Game(Console::scrpx_count fontWidth, std::wstring_view title)
+Game::Game(Console::px_count fontWidth, std::wstring_view title)
 	: console{ fontWidth, title }
 {}
 

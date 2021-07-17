@@ -1,7 +1,8 @@
-﻿
-
-#include "WindowsFunctionality.h"
+﻿#include "WindowsFunctionality.h"
 #include "ConsoleWrapper.h"
+#include "Keyboard.h"
+
+#include <iostream>
 
 int main()
 {

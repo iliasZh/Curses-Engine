@@ -38,16 +38,16 @@ EntryList& EntryList::operator=(EntryList&& el) noexcept
 
 size_t EntryList::EntryLength(size_t i) const
 {
-	size_t entry_name_len = count_codepoints(entries[i]->Name(global.lang));
+	size_t entry_name_len = entries[i]->Name(global.lang).size();
 	if (!entries[i]->HasOptions())
 		return entry_name_len;
 	else
-		return entry_name_len + count_codepoints(entries[i]->CurrentOption(global.lang));
+		return entry_name_len + entries[i]->CurrentOption(global.lang).size();
 }
 
 size_t EntryList::MaxEntryLength(size_t i) const
 {
-	size_t entry_name_len = count_codepoints(entries[i]->Name(global.lang));
+	size_t entry_name_len = entries[i]->Name(global.lang).size();
 	if (!entries[i]->HasOptions())
 	{
 		return entry_name_len;
@@ -57,7 +57,7 @@ size_t EntryList::MaxEntryLength(size_t i) const
 		size_t max_opt_len = 0u;
 		for (const auto& opt : entries[i]->GetOptions(global.lang))
 		{
-			if (size_t opt_len = count_codepoints(opt); opt_len > max_opt_len)
+			if (size_t opt_len = opt.size(); opt_len > max_opt_len)
 				max_opt_len = opt_len;
 		}
 		return entry_name_len + max_opt_len;
@@ -96,14 +96,9 @@ Menu::Menu(const Window& win, Keyboard& kbd,
 	CreateMenuWindow();
 }
 
-void Menu::Touch() const
-{
-	menuPtr->Touch();
-}
-
 void Menu::Refresh() const
 {
-	menuPtr->Refresh();
+	menuPtr->Render();
 }
 
 void Menu::Listen()
@@ -148,8 +143,7 @@ void Menu::Listen()
 void Menu::SetLayoutDesc(LayoutDesc ld)
 {
 	layoutDesc = ld;
-	parentWin.Touch();
-	parentWin.Refresh();
+	parentWin.Render();
 	CreateMenuWindow();
 }
 
@@ -164,7 +158,7 @@ void Menu::CreateMenuWindow()
 	// + (if any entry has options) 2 chars
 	ucoord width = ucoord
 	(
-		std::max(entryList.LongestEntryLength(), count_codepoints(title[global.lang])) +
+		std::max(entryList.LongestEntryLength(), title[global.lang].size()) +
 		+2u * (size_t)layoutDesc.HorizontalMargin() + 2u +
 		+((entryList.AnyEntryHasOptions()) ? 2u : 0u)
 	);
@@ -174,16 +168,17 @@ void Menu::CreateMenuWindow()
 
 	auto start_pos = GetWindowStartPos(width, height);
 
-	menuPtr = std::make_unique<Window>(start_pos.first, start_pos.second, width, height);
+	menuPtr = std::make_unique<Window>(parentWin.GetConsole(), 
+		start_pos.first, start_pos.second, width, height);
 
-	separatorLine = u8"";
-	separatorLine.reserve(std::size(u8"├") - 1 + (menuPtr->Width() - 2) * (std::size(u8"─") - 1) + std::size(u8"┤") - 1 + 1);
-	separatorLine += u8"├";
-	for (size_t i = 1u; i < menuPtr->Width() - 1; ++i)
+	separatorLine = L"";
+	separatorLine.reserve(std::size(L"├") - 1 + (menuPtr->Width() - 2) * (std::size(L"─") - 1) + std::size(L"┤") - 1 + 1);
+	separatorLine += L"├";
+	for (size_t i = 1u; i < menuPtr->Width() - 1u; ++i)
 	{
-		separatorLine += u8"─";
+		separatorLine += L"─";
 	}
-	separatorLine += u8"┤";
+	separatorLine += L"┤";
 
 	Draw();
 }
@@ -256,7 +251,7 @@ void Menu::DrawUpperMargin() const
 	for (size_t i = 0u; i < layoutDesc.VerticalMargin(); ++i)
 	{
 		menuPtr->Write(1u, ucoord(3u + i),
-			u8str(menuPtr->Width() - 2u, u8' '), palette.baseBg, palette.baseBg);
+			std::wstring(menuPtr->Width() - 2u, u8' '), palette.baseBg, palette.baseBg);
 	}
 }
 
@@ -265,7 +260,7 @@ void Menu::DrawLowerMargin() const
 	for (size_t i = 0u; i < layoutDesc.VerticalMargin(); ++i)
 	{
 		menuPtr->Write(1u, ucoord(3u + layoutDesc.VerticalMargin() + entryList.Size() + i),
-			u8str(menuPtr->Width() - 2u, u8' '), palette.baseBg, palette.baseBg);
+			std::wstring(menuPtr->Width() - 2u, u8' '), palette.baseBg, palette.baseBg);
 	}
 }
 
@@ -319,23 +314,23 @@ bool Menu::SwitchRight()
 	return switched;
 }
 
-u8str Menu::TitleToString() const
+std::wstring Menu::TitleToString() const
 {
-	size_t title_len = count_codepoints(title[global.lang]);
+	size_t title_len = title[global.lang].size();
 	size_t l_margin = (menuPtr->Width() - 2u - title_len) / 2u;
 	size_t r_margin = (menuPtr->Width() - 2u - title_len) - l_margin;
 
-	u8str title_str;
-	title_str += u8str(l_margin, u8' ');
+	std::wstring title_str;
+	title_str += std::wstring(l_margin, u8' ');
 	title_str += title[global.lang];
-	title_str += u8str(r_margin, u8' ');
+	title_str += std::wstring(r_margin, u8' ');
 	
 	return title_str;
 }
 
-u8str Menu::EntryToString(size_t i) const
+std::wstring Menu::EntryToString(size_t i) const
 {
-	u8str entry;
+	std::wstring entry;
 	size_t entry_len;
 	
 	entry_len = entryList.EntryLength(i);
@@ -344,14 +339,14 @@ u8str Menu::EntryToString(size_t i) const
 	size_t l_margin = (menuPtr->Width() - 2u - entry_len) / 2u;
 	size_t r_margin = (menuPtr->Width() - 2u - entry_len) - l_margin;
 
-	entry += u8str(l_margin, u8' ');
+	entry += std::wstring(l_margin, u8' ');
 	entry += entryList[i]->Name(global.lang);
 	if (entryList[i]->HasOptions())
 	{
-		entry += u8": ";
+		entry += L": ";
 		entry += entryList[i]->CurrentOption(global.lang);
 	}
-	entry += u8str(r_margin, u8' ');
+	entry += std::wstring(r_margin, u8' ');
 	
 	if (i == currEntryIndex && entryList[i]->HasOptions() && layoutDesc.HorizontalMargin() > 0u)
 	{

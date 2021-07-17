@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ConsoleWrapper.h"
-#include "CursesWrapper.h"
 #include "Keyboard.h"
 
 class Game
@@ -9,7 +8,7 @@ class Game
 public:
 	Game()	= default;
 	~Game()	= default;
-	Game(Console::scrpx_count fontWidth, std::wstring_view title);
+	Game(Console::px_count fontWidth, std::wstring_view title);
 	Game(const Game&)				= delete;
 	Game& operator=(const Game&)	= delete;
 
@@ -18,6 +17,5 @@ public:
 	void DrawFrame();
 private:
 	Console console;
-	Curses curses;
 	Keyboard kbd;
 };

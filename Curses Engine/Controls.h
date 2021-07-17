@@ -1,7 +1,7 @@
 #pragma once
 
 #include "WindowsFunctionality.h"
-#include "StringTypedefs.h"
+#include <string_view>
 
 class Controls
 {
@@ -9,24 +9,24 @@ public:
 	class Binding
 	{
 	public:
-		Binding(u8str_view name, int vkcodeP, int vkcodeS = 0)
+		Binding(std::wstring_view name, int vkcodeP, int vkcodeS = 0)
 			: name{ name }
 			, primary{ vkcodeP }
 			, secondary{ vkcodeS }
 		{}
 		int Primary() const { return primary; }
 		int Secondary() const { return secondary; }
-		u8str_view GetName() const { return name; }
+		std::wstring_view GetName() const { return name; }
 	private:
-		u8str_view name;
+		std::wstring_view name;
 		int primary = 0;
 		int secondary = 0;
 	};
 public:
-	inline static const Binding Up		{ u8"Up",		'W', VK_UP };
-	inline static const Binding Down	{ u8"Down",		'S', VK_DOWN };
-	inline static const Binding Left	{ u8"Left",		'A', VK_LEFT };
-	inline static const Binding Right	{ u8"Right",	'D', VK_RIGHT };
-	inline static const Binding Back	{ u8"Back",		VK_ESCAPE, VK_BACK };
-	inline static const Binding Select	{ u8"Select",	'F', VK_RETURN };
+	inline static const Binding Up		{ L"Up",		'W', VK_UP };
+	inline static const Binding Down	{ L"Down",		'S', VK_DOWN };
+	inline static const Binding Left	{ L"Left",		'A', VK_LEFT };
+	inline static const Binding Right	{ L"Right",		'D', VK_RIGHT };
+	inline static const Binding Back	{ L"Back",		VK_ESCAPE, VK_BACK };
+	inline static const Binding Select	{ L"Select",	'F', VK_RETURN };
 };

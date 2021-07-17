@@ -1,9 +1,9 @@
 #pragma once
 
-#include "StringTypedefs.h"
 #include <array>
 #include <cassert>
 #include <algorithm>
+#include <string_view>
 
 enum class Lang
 {
@@ -15,7 +15,7 @@ enum class Lang
 class Expression
 {
 public:
-	using Word = std::pair<Lang, u8str_view>;
+	using Word = std::pair<Lang, std::wstring_view>;
 	Expression() : translations{} {}
 	Expression(std::initializer_list<Word> words)
 	{
@@ -25,7 +25,7 @@ public:
 			translations[size_t(it->first)] = it->second;
 		}
 	}
-	const u8str_view& operator[](Lang lang) const
+	const std::wstring_view& operator[](Lang lang) const
 	{
 		return translations[(size_t)lang];
 	}
@@ -47,10 +47,10 @@ private:
 	}
 private:
 	static constexpr size_t numLangs = size_t(Lang::Size);
-	std::array<u8str_view, numLangs> translations;
+	std::array<std::wstring_view, numLangs> translations;
 };
 
-inline bool operator==(const u8str_view& str, const Expression& exp)
+inline bool operator==(const std::wstring_view& str, const Expression& exp)
 {
 	for (size_t i = 0u; i < (size_t)Lang::Size; ++i)
 		if (exp[Lang(i)] == str) return true;
