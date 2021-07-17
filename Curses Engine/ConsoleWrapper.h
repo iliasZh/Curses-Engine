@@ -17,11 +17,11 @@ public:
 	public:
 		Buffer(USHORT width, USHORT height);
 		~Buffer() noexcept { delete[] data; }
-		CHAR_INFO& At(USHORT x, USHORT y)
-		{
-			assert(x < width&& y < height);
-			return data[y * width + x];
-		}
+		Buffer(const Buffer&) = delete;
+		Buffer& operator=(const Buffer&) = delete;
+		Buffer(Buffer&& buf) noexcept;
+		Buffer& operator=(Buffer&& buf) noexcept;
+		CHAR_INFO& At(USHORT x, USHORT y);
 		void Clear(Color);
 		COORD Size() const { return { (SHORT)width, (SHORT)height }; }
 		const CHAR_INFO* Data() const { return data; }
@@ -32,13 +32,20 @@ public:
 	};
 public:
 	Window(const Console& con, USHORT startX, USHORT startY, USHORT width, USHORT height);
+	Window(const Window&) = delete;
+	Window& operator=(const Window&) = delete;
+	Window(Window&&) noexcept;
+	Window& operator=(Window&&) noexcept;
 	void Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color bg);
 	void Write(USHORT x, USHORT y, std::wstring_view text, ColorPair col)
 	{
 		Write(x, y, text, col.fg, col.bg);
 	}
 	void WriteChar(USHORT x, USHORT y, wchar_t ch, Color fg, Color bg);
-	void WriteChar(USHORT x, USHORT y, wchar_t ch, ColorPair col) { WriteChar(x, y, ch, col.fg, col.bg); }
+	void WriteChar(USHORT x, USHORT y, wchar_t ch, ColorPair col)
+	{
+		WriteChar(x, y, ch, col.fg, col.bg);
+	}
 	void DrawBox(Color c = Color::White);
 	void Render();
 	void Clear() { buf.Clear(bgColor); }
@@ -83,10 +90,13 @@ public:
 	Console(Console&&) = delete;
 	Console& operator=(const Console&) = delete;
 	Console& operator=(Console&&) = delete;
-	
+	~Console() { --instances; }
+
 	void Render(const CHAR_INFO* buffer, COORD size, COORD drawStart) const;
 	void SetCursorMode(Cursor mode);
 public:
+	Window& Stdwin() { return *(pStdwin.get()); }
+	bool IsInitialized() const { return instances == 1u; }
 	USHORT Width() const { return width; }
 	USHORT Height() const { return height; }
 private:
@@ -100,13 +110,14 @@ private:
 private:
 	HWND hConsole = NULL;
 	HANDLE conOut = INVALID_HANDLE_VALUE;
-	std::wstring_view title;
 	USHORT width;
 	USHORT height;
 	px_count fontWidth;
+	std::wstring_view title;
 	px_count workAreaWidth = 1920u;
 	px_count workAreaHeight = 1080u;
 	Cursor cursorMode = Cursor::Underline;
+	std::unique_ptr<Window> pStdwin;
 private:
 	inline static size_t instances = 0u;
 };

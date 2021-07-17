@@ -8,6 +8,33 @@ Window::Buffer::Buffer(USHORT width, USHORT height)
 	Clear(Color::Black);
 }
 
+Window::Buffer::Buffer(Buffer&& buf) noexcept
+	: width{ buf.width }, height{ buf.height }
+	, data{ buf.data }
+{
+	buf.data = nullptr;
+}
+
+Window::Buffer& Window::Buffer::operator=(Buffer&& buf) noexcept
+{
+	if (this != &buf)
+	{
+		delete[] data;
+		width = buf.width;
+		height = buf.height;
+		data = buf.data;
+		buf.data = nullptr;
+	}
+	return *this;
+}
+
+
+CHAR_INFO& Window::Buffer::At(USHORT x, USHORT y)
+{
+	assert(x < width&& y < height);
+	return data[y * width + x];
+}
+
 void Window::Buffer::Clear(Color c)
 {
 	for (unsigned i = 0u; i < USHORT(width * height); ++i)
@@ -20,8 +47,31 @@ Window::Window(const Console& con, USHORT startX, USHORT startY, USHORT width, U
 	, startPos{ (SHORT)startX, (SHORT)startY }
 	, buf{ width, height }
 {
+	assert(con.IsInitialized());
 	assert(startX + width <= con.Width());
 	assert(startY + height <= con.Height());
+}
+
+Window::Window(Window&& win) noexcept
+	: con{ win.con }
+	, startPos{ win.startPos }
+	, buf{ std::move(win.buf) }
+	, bgColor{ win.bgColor }
+{
+	Clear();
+}
+
+Window& Window::operator=(Window&& win) noexcept
+{
+	if (this != &win)
+	{
+		assert(&con == &win.con); // console is a singleton, so it *should* be ok, but still ugh
+		startPos = win.startPos;
+		bgColor = win.bgColor;
+		buf = std::move(win.buf);
+		Clear();
+	}
+	return *this;
 }
 
 void Window::Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color bg)
@@ -68,6 +118,7 @@ Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_v
 	, width{ width }, height{ height }
 	, fontWidth{ fontWidth }
 	, title{ title }
+	, pStdwin{}
 {
 	SetupConsole(false);
 }
@@ -77,6 +128,7 @@ Console::Console(px_count fontWidthPx, std::wstring_view title)
 	, width{ 0 }, height{ 0 }
 	, fontWidth{ fontWidthPx }
 	, title{ title }
+	, pStdwin{}
 {
 	SetupConsole(true);
 }
@@ -123,7 +175,7 @@ void Console::SetCursorMode(Cursor mode)
 void Console::SetupConsole(bool maxSize)
 {
 	// sanity check
-	assert(++instances == 1);
+	assert(instances == 0u);
 
 	if (conOut == INVALID_HANDLE_VALUE)
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");
@@ -141,6 +193,11 @@ void Console::SetupConsole(bool maxSize)
 	SetupStyle();
 
 	CenterWindow();
+
+	// sanity check
+	assert(++instances == 1u);
+
+	pStdwin = std::make_unique<Window>(*this, 0u, 0u, Width(), Height());
 }
 
 void Console::SetupFont()
