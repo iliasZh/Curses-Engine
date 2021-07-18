@@ -11,18 +11,11 @@ int main()
 	try
 	{
 		using ex = CommonExpressions;
-		Expression menu_size = { {Lang::EN, L"MENU SIZE"}, {Lang::RU, L"РАЗМЕР МЕНЮ"} };
-		Console con{ 12u };
+		Console con{ 15u };
+		con.SetCursorMode(Console::Cursor::Invisible);
 		Keyboard kbd{};
-		std::vector<std::unique_ptr<Entry>> entries;
-		entries.push_back(MakeButton(ex::start, false));
-		entries.push_back(MakeSwitch(ex::language, { ex::english, ex::russian }));
-		entries.push_back(MakeSwitch(menu_size, { ex::small, ex::medium, ex::large}));
-		entries.push_back(MakeButton(ex::quit, true));
-
-		EntryList el{ std::move(entries) };
-
-		TestMenu test{ con.Stdwin(), kbd, ex::menu, std::move(el) };
+		
+		TestMenu test{ con.Stdwin(), kbd };
 		test.Listen();
 	}
 	catch (std::exception& e)

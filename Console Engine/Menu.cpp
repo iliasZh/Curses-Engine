@@ -147,9 +147,17 @@ void Menu::SetLayoutDesc(LayoutDesc ld)
 	CreateMenuWindow();
 }
 
+void Menu::SetEntryList(EntryList&& el)
+{
+	assert(entryList.Size() == 0u);
+	entryList = std::move(el);
+	parentWin.Render();
+	CreateMenuWindow();
+}
+
 void Menu::CreateMenuWindow()
 {
-	assert(entryList.Size() > 1u);
+	//assert(entryList.Size() > 1u);
 
 	// 2 additional lines for title, 2 for box
 	ucoord height = ucoord(entryList.Size() + 2u * layoutDesc.VerticalMargin() + 2u + 2u);
@@ -170,15 +178,6 @@ void Menu::CreateMenuWindow()
 
 	menuPtr = std::make_unique<Window>(parentWin.GetConsole(), 
 		start_pos.first, start_pos.second, width, height);
-
-	separatorLine = L"";
-	separatorLine.reserve(std::size(L"├") - 1 + (menuPtr->Width() - 2) * (std::size(L"─") - 1) + std::size(L"┤") - 1 + 1);
-	separatorLine += L"├";
-	for (size_t i = 1u; i < menuPtr->Width() - 1u; ++i)
-	{
-		separatorLine += L"─";
-	}
-	separatorLine += L"┤";
 
 	Draw();
 }
@@ -251,7 +250,7 @@ void Menu::DrawUpperMargin() const
 	for (size_t i = 0u; i < layoutDesc.VerticalMargin(); ++i)
 	{
 		menuPtr->Write(1u, ucoord(3u + i),
-			std::wstring(menuPtr->Width() - 2u, u8' '), palette.baseBg, palette.baseBg);
+			std::wstring(menuPtr->Width() - 2u, L' '), palette.baseBg, palette.baseBg);
 	}
 }
 
@@ -260,7 +259,7 @@ void Menu::DrawLowerMargin() const
 	for (size_t i = 0u; i < layoutDesc.VerticalMargin(); ++i)
 	{
 		menuPtr->Write(1u, ucoord(3u + layoutDesc.VerticalMargin() + entryList.Size() + i),
-			std::wstring(menuPtr->Width() - 2u, u8' '), palette.baseBg, palette.baseBg);
+			std::wstring(menuPtr->Width() - 2u, L' '), palette.baseBg, palette.baseBg);
 	}
 }
 
@@ -268,8 +267,11 @@ void Menu::DrawBox() const
 {
 	menuPtr->DrawBox(palette.box, palette.baseBg);
 
-	menuPtr->Write(0u, ucoord(2u),
-		separatorLine, palette.box, palette.baseBg);
+	// draw title/buttons separator
+	menuPtr->WriteChar(0u, 2u, L'├', palette.box, palette.baseBg);
+	menuPtr->WriteChar(menuPtr->Width() - 1u, 2u, L'┤', palette.box, palette.baseBg);
+	for (ucoord i = 1u; i < menuPtr->Width() - 1u; ++i)
+		menuPtr->WriteChar(i, 2u, L'─', palette.box, palette.baseBg);
 }
 
 int Menu::NextEntry()
@@ -321,9 +323,9 @@ std::wstring Menu::TitleToString() const
 	size_t r_margin = (menuPtr->Width() - 2u - title_len) - l_margin;
 
 	std::wstring title_str;
-	title_str += std::wstring(l_margin, u8' ');
+	title_str += std::wstring(l_margin, L' ');
 	title_str += title[global.lang];
-	title_str += std::wstring(r_margin, u8' ');
+	title_str += std::wstring(r_margin, L' ');
 	
 	return title_str;
 }
@@ -339,22 +341,22 @@ std::wstring Menu::EntryToString(size_t i) const
 	size_t l_margin = (menuPtr->Width() - 2u - entry_len) / 2u;
 	size_t r_margin = (menuPtr->Width() - 2u - entry_len) - l_margin;
 
-	entry += std::wstring(l_margin, u8' ');
+	entry += std::wstring(l_margin, L' ');
 	entry += entryList[i]->Name(global.lang);
 	if (entryList[i]->HasOptions())
 	{
 		entry += L": ";
 		entry += entryList[i]->CurrentOption(global.lang);
 	}
-	entry += std::wstring(r_margin, u8' ');
+	entry += std::wstring(r_margin, L' ');
 	
 	if (i == currEntryIndex && entryList[i]->HasOptions() && layoutDesc.HorizontalMargin() > 0u)
 	{
 		int num_of_opts = (int)entryList[i]->GetOptions(global.lang).size();
 		if (loopSwitches || entryList[i]->CurrentOptionIndex() != 0)
-			entry.front() = u8'<';
+			entry.front() = L'<';
 		if (loopSwitches || entryList[i]->CurrentOptionIndex() != num_of_opts - 1)
-			entry.back() = u8'>';
+			entry.back() = L'>';
 	}
 	return entry;
 }

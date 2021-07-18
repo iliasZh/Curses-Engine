@@ -151,6 +151,7 @@ public:
 	virtual void OnSwitch(std::wstring_view name, std::wstring_view opt)	= 0;
 
 public: // getters/setters
+	const Expression& Title() const { return title; }
 	bool IsLooping() const { return loopEntryList; }
 	void EnableLooping() { loopEntryList = true; }
 	void DisableLooping() { loopEntryList = false; }
@@ -159,6 +160,7 @@ public: // getters/setters
 	void DisableSwitchesLooping() { loopSwitches = false; }
 	MenuPalette& GetPalette() { return palette; }
 	void SetLayoutDesc(LayoutDesc ld);
+	void SetEntryList(EntryList&& el);
 protected: // helpers
 	void CreateMenuWindow();
 	void Draw() const;
@@ -190,12 +192,11 @@ protected:
 	const Window& parentWin;
 	std::unique_ptr<Window> menuPtr;
 	MenuPalette palette;
+	Expression title;
 private:
 	Keyboard& kbd;
-	Expression title;
 	EntryList entryList;
 	LayoutDesc layoutDesc;
-	std::wstring separatorLine{};
 	int currEntryIndex;
 	bool loopEntryList = false;
 	bool loopSwitches = false;
