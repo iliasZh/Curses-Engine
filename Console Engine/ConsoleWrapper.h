@@ -108,9 +108,11 @@ private:
 	void GetMonitorWorkAreaSize();
 	void CenterWindow();
 	void SetupStyle();
+	void DisableTextSelection();
 private:
 	HWND hConsole = NULL;
 	HANDLE conOut = INVALID_HANDLE_VALUE;
+	HANDLE conIn = INVALID_HANDLE_VALUE;
 	USHORT width;
 	USHORT height;
 	px_count fontWidth;

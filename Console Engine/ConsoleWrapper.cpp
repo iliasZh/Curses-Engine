@@ -119,6 +119,7 @@ void Window::Render() const
 
 Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_view title)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
+	, conIn{ GetStdHandle(STD_INPUT_HANDLE) }
 	, width{ width }, height{ height }
 	, fontWidth{ fontWidth }
 	, title{ title }
@@ -129,6 +130,7 @@ Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_v
 
 Console::Console(px_count fontWidth, std::wstring_view title)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
+	, conIn{ GetStdHandle(STD_INPUT_HANDLE) }
 	, width{ 0u }, height{ 0u }
 	, fontWidth{ fontWidth }
 	, title{ title }
@@ -179,8 +181,7 @@ void Console::SetCursorMode(Cursor mode)
 
 void Console::SetupConsole(bool maxSize)
 {
-	// sanity check
-	assert(instances == 0u);
+	assert(instances == 0u); // sanity check
 
 	if (conOut == INVALID_HANDLE_VALUE)
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");
@@ -199,8 +200,9 @@ void Console::SetupConsole(bool maxSize)
 
 	CenterWindow();
 
-	// sanity check
-	assert(++instances == 1u);
+	DisableTextSelection();
+
+	assert(++instances == 1u); // sanity check
 
 	pStdwin = std::make_unique<Window>(*this, 0u, 0u, Width(), Height());
 }
@@ -226,7 +228,7 @@ void Console::SetupFont()
 
 void Console::SetupScreenBuffer(bool maxSize)
 {
-	auto [max_w, max_h] = GetLargestConsoleWindowSize(conOut);
+	auto [max_w, max_h] = GetLargestConsoleWindowSize(conOut); // sweet c++14/17 (not sure which)
 	if (maxSize)
 	{
 		width = max_w;
@@ -257,9 +259,10 @@ void Console::SetupScreenBuffer(bool maxSize)
 void Console::SetTitleAndGetHwnd()
 {
 	std::wstring_view setup = L"Console engine setup...";
-	SetConsoleTitle(setup.data()); // set a special title to get a HWND to the console
-	Sleep(50); // wait some milliseconds for title to be set...
+	SetConsoleTitle(setup.data());	// set a special title to get a HWND to the console
+	Sleep(50);						// wait for the title to be set...
 
+	// find by title
 	if ((hConsole = FindWindow(NULL, setup.data())) == NULL)
 		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
 
@@ -268,7 +271,8 @@ void Console::SetTitleAndGetHwnd()
 
 void Console::GetMonitorWorkAreaSize()
 {
-	assert(hConsole != NULL);
+	// gets ->primary<- monitor work area size
+	assert(hConsole != NULL); // sanity check
 
 	HMONITOR h_mon = MonitorFromWindow(hConsole, MONITOR_DEFAULTTOPRIMARY);
 	MONITORINFO mi{};
@@ -281,14 +285,14 @@ void Console::GetMonitorWorkAreaSize()
 
 void Console::SetupStyle()
 {
-	assert(hConsole != NULL);
+	assert(hConsole != NULL); // sanity check
 
 	LONG console_style;
 	console_style = GetWindowLong(hConsole, GWL_STYLE); // get window style
 
-	if (console_style & WS_SIZEBOX)		// do not allow to resize window
+	if (console_style & WS_SIZEBOX)			// do not allow to resize window
 		console_style ^= WS_SIZEBOX;		// set to false
-	if (console_style & WS_MAXIMIZEBOX)	// do not allow to maximize window
+	if (console_style & WS_MAXIMIZEBOX)		// do not allow to maximize window
 		console_style ^= WS_MAXIMIZEBOX;	// set to false
 	SetWindowLong(hConsole, GWL_STYLE, console_style);	// set the new style
 	
@@ -304,10 +308,29 @@ void Console::SetupStyle()
 	);
 }
 
+void Console::DisableTextSelection()
+{
+	DWORD prev_mode = 0u;
+
+	// get mode for *input* handle
+	// don't use output handle like me, stupid mistake
+	// SetMode will silently return a BOOL == 0 and proceed as normal (unless you catch it like here)
+	if (GetConsoleMode(conIn, &prev_mode) == 0)
+		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console mode");
+
+	// set mode with ext flags but without quick edit mode
+	// this disables mouse text selection
+	// profit!
+	if (SetConsoleMode(conIn, ENABLE_EXTENDED_FLAGS |
+		(prev_mode & ~ENABLE_QUICK_EDIT_MODE)) == 0)
+		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to set console mode");
+}
+
 void Console::CenterWindow()
 {
-	assert(hConsole != NULL);
+	assert(hConsole != NULL); // sanity check
 
+	// get window dimensions
 	WINDOWINFO win_info;
 	win_info.cbSize = sizeof(win_info);
 	if (GetWindowInfo(hConsole, &win_info) == 0)
@@ -315,6 +338,7 @@ void Console::CenterWindow()
 	px_count width_px = px_count(win_info.rcWindow.right - win_info.rcWindow.left);
 	px_count height_px = px_count(win_info.rcWindow.bottom - win_info.rcWindow.top);
 
+	// center it!
 	SetWindowPos
 	(
 		hConsole, HWND_TOP,
