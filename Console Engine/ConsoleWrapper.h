@@ -52,6 +52,10 @@ public:
 	void Clear() { buf.Clear(bgColor); }
 	void SetDefaultBgColor(Color c) { bgColor = c; }
 	const Console& GetConsole() const { return con; }
+	USHORT Left() const { return (USHORT)startPos.X; }
+	USHORT Top() const { return (USHORT)startPos.Y; }
+	USHORT Right() const { return Left() + Width() - 1u; }
+	USHORT Bottom() const { return Top() + Height() - 1u; }
 	USHORT Width() const { return buf.Size().X; }
 	USHORT Height() const { return buf.Size().Y; }
 private:
@@ -100,6 +104,8 @@ public:
 	bool IsInitialized() const { return instances == 1u; }
 	USHORT Width() const { return width; }
 	USHORT Height() const { return height; }
+	HWND WindowHandle() const { return hConsole; }
+	px_count FontWidth() const { return fontWidth; }
 private:
 	void SetupConsole(bool maxSize);
 	void SetupFont();

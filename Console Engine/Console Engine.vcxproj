@@ -169,6 +169,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +183,7 @@
     <ClInclude Include="GlobalParameters.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="RandomNumberGenerator.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="TestMenu.h" />

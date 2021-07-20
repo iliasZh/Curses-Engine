@@ -1,6 +1,7 @@
 ﻿#include "Menu.h"
 #include "Timer.h"
 #include "GlobalParameters.h"
+#include <thread>
 
 Switch::Switch(Expression name, AbstractOptions options)
 	: Entry{ name }
@@ -83,9 +84,10 @@ bool EntryList::AnyEntryHasOptions() const
 }
 
 
-Menu::Menu(const Window& win, Keyboard& kbd,
+Menu::Menu(const Window& win, Keyboard& kbd, Mouse& mouse,
 	Expression title, EntryList el, LayoutDesc ld, MenuPalette mp)
 	: kbd{ kbd }
+	, mouse{ mouse }
 	, title{ title }
 	, entryList{ std::move(el) }
 	, layoutDesc{ ld }
@@ -111,6 +113,24 @@ void Menu::Listen()
 		const auto& curr_entry = entryList[currEntryIndex];
 		const bool has_opts = entryList[currEntryIndex]->HasOptions();
 		timer.Mark();
+
+
+		// separate function
+		auto [w, h] = mouse.GetPos();
+		
+		w /= menuPtr->GetConsole().FontWidth();
+		h /= 2u * menuPtr->GetConsole().FontWidth();
+
+		if (w > menuPtr->Left() && w < menuPtr->Right())
+		{
+			if (h > menuPtr->Top() + 2u + layoutDesc.VerticalMargin()
+				&& h < menuPtr->Bottom() - layoutDesc.VerticalMargin())
+			{
+				h -= (menuPtr->Top() + 3u + layoutDesc.VerticalMargin());
+				GoToEntry(h);
+			}
+		}
+
 		if (kbd.IsBindingPressedOnce(Controls::Down))
 		{
 			NextEntry();
@@ -272,6 +292,18 @@ void Menu::DrawBox() const
 	menuPtr->WriteChar(menuPtr->Width() - 1u, 2u, L'┤', palette.box, palette.baseBg);
 	for (ucoord i = 1u; i < menuPtr->Width() - 1u; ++i)
 		menuPtr->WriteChar(i, 2u, L'─', palette.box, palette.baseBg);
+}
+
+int Menu::GoToEntry(int index)
+{
+	int prev_entry_index = currEntryIndex;
+	currEntryIndex = index;
+	if (prev_entry_index != currEntryIndex)
+	{
+		DrawEntry(prev_entry_index);
+		DrawEntry(currEntryIndex);
+	}
+	return currEntryIndex;
 }
 
 int Menu::NextEntry()

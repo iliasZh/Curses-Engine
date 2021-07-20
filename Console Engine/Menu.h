@@ -2,6 +2,7 @@
 
 #include "ExceptionBase.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 #include "Utilities.h"
 #include "GlobalParameters.h"
 #include "Expression.h"
@@ -140,7 +141,7 @@ class Menu
 public:
 	using Color = Window::Color;
 	using ucoord = USHORT;
-	Menu(const Window& win, Keyboard& kbd, Expression title,
+	Menu(const Window&, Keyboard&, Mouse&, Expression title,
 		EntryList entryList, LayoutDesc ld = {}, MenuPalette mp = {});
 	virtual ~Menu() = default;
 	void Refresh() const;
@@ -171,6 +172,7 @@ private:
 	void DrawUpperMargin() const;
 	void DrawLowerMargin() const;
 	void DrawBox() const;
+	int GoToEntry(int);
 	int NextEntry();
 	int PrevEntry();
 	bool SwitchLeft();
@@ -195,6 +197,7 @@ protected:
 	Expression title;
 private:
 	Keyboard& kbd;
+	Mouse& mouse;
 	EntryList entryList;
 	LayoutDesc layoutDesc;
 	int currEntryIndex;

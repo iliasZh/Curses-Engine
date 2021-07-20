@@ -1,6 +1,7 @@
 ﻿#include "WindowsFunctionality.h"
 #include "ConsoleWrapper.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 #include "TestMenu.h"
 
@@ -14,8 +15,9 @@ int main()
 		Console con{ 15u };
 		con.SetCursorMode(Console::Cursor::Invisible);
 		Keyboard kbd{};
-		
-		TestMenu test{ con.Stdwin(), kbd };
+		Mouse mouse{ con.WindowHandle() };
+
+		TestMenu test{ con.Stdwin(), kbd, mouse };
 		test.Listen();
 	}
 	catch (std::exception& e)

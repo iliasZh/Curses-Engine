@@ -5,8 +5,8 @@
 class TestMenu : public Menu
 {
 public:
-	TestMenu(const Window& win, Keyboard& kbd)
-		: Menu{ win, kbd, {{Lang::EN, L"TEST MENU"}, {Lang::RU, L"реярнбне лемч"}}, {{}}, {}, {} }
+	TestMenu(const Window& win, Keyboard& kbd, Mouse& mouse)
+		: Menu{ win, kbd, mouse, {{Lang::EN, L"TEST MENU"}, {Lang::RU, L"реярнбне лемч"}}, {{}}, {}, {} }
 	{
 		using ex = CommonExpressions;
 		Expression menu_size = { {Lang::EN, L"MENU SIZE"}, {Lang::RU, L"пюглеп лемч"} };
