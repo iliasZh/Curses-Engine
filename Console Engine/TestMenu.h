@@ -27,9 +27,9 @@ public:
 		if (name == ex::language)
 		{
 			if (opt == ex::english)
-				global.lang = Lang::EN;
+				global::lang = Lang::EN;
 			else if (opt == ex::russian)
-				global.lang = Lang::RU;
+				global::lang = Lang::RU;
 
 			parentWin.Render();
 			CreateMenuWindow();

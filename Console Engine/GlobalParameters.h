@@ -2,11 +2,8 @@
 
 #include "Expression.h"
 
-class Global
+namespace global
 {
-public:
-	static constexpr float frametime = 20.0f;
-	Lang lang = Lang::EN;
-};
-
-inline Global global;
+	constexpr float frametime = 20.0f; // milliseconds ofc
+	inline Lang lang = Lang::EN;
+}

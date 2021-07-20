@@ -38,16 +38,16 @@ EntryList& EntryList::operator=(EntryList&& el) noexcept
 
 size_t EntryList::EntryLength(size_t i) const
 {
-	size_t entry_name_len = entries[i]->Name(global.lang).size();
+	size_t entry_name_len = entries[i]->Name(global::lang).size();
 	if (!entries[i]->HasOptions())
 		return entry_name_len;
 	else
-		return entry_name_len + entries[i]->CurrentOption(global.lang).size();
+		return entry_name_len + entries[i]->CurrentOption(global::lang).size();
 }
 
 size_t EntryList::MaxEntryLength(size_t i) const
 {
-	size_t entry_name_len = entries[i]->Name(global.lang).size();
+	size_t entry_name_len = entries[i]->Name(global::lang).size();
 	if (!entries[i]->HasOptions())
 	{
 		return entry_name_len;
@@ -55,7 +55,7 @@ size_t EntryList::MaxEntryLength(size_t i) const
 	else
 	{
 		size_t max_opt_len = 0u;
-		for (const auto& opt : entries[i]->GetOptions(global.lang))
+		for (const auto& opt : entries[i]->GetOptions(global::lang))
 		{
 			if (size_t opt_len = opt.size(); opt_len > max_opt_len)
 				max_opt_len = opt_len;
@@ -122,21 +122,21 @@ void Menu::Listen()
 
 		if (kbd.IsBindingPressedOnce(Controls::Select) && !has_opts)
 		{
-			OnSelect(curr_entry->Name(global.lang));
+			OnSelect(curr_entry->Name(global::lang));
 			listen = !(curr_entry->IsClosing());
 		}
 
 		if (kbd.IsBindingPressedOnce(Controls::Right) && SwitchRight())
 		{
-			OnSwitch(curr_entry->Name(global.lang), curr_entry->CurrentOption(global.lang));
+			OnSwitch(curr_entry->Name(global::lang), curr_entry->CurrentOption(global::lang));
 		}
 		else if (kbd.IsBindingPressedOnce(Controls::Left) && SwitchLeft())
 		{
-			OnSwitch(curr_entry->Name(global.lang), curr_entry->CurrentOption(global.lang));
+			OnSwitch(curr_entry->Name(global::lang), curr_entry->CurrentOption(global::lang));
 		}
 
 		Refresh();
-		std::this_thread::sleep_for(std::chrono::milliseconds(int(global.frametime - (timer.Peek()))));
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(global::frametime - (timer.Peek()))));
 	}
 }
 
@@ -166,7 +166,7 @@ void Menu::CreateMenuWindow()
 	// + (if any entry has options) 2 chars
 	ucoord width = ucoord
 	(
-		std::max(entryList.LongestEntryLength(), title[global.lang].size()) +
+		std::max(entryList.LongestEntryLength(), title[global::lang].size()) +
 		+2u * (size_t)layoutDesc.HorizontalMargin() + 2u +
 		+((entryList.AnyEntryHasOptions()) ? 2u : 0u)
 	);
@@ -318,13 +318,13 @@ bool Menu::SwitchRight()
 
 std::wstring Menu::TitleToString() const
 {
-	size_t title_len = title[global.lang].size();
+	size_t title_len = title[global::lang].size();
 	size_t l_margin = (menuPtr->Width() - 2u - title_len) / 2u;
 	size_t r_margin = (menuPtr->Width() - 2u - title_len) - l_margin;
 
 	std::wstring title_str;
 	title_str += std::wstring(l_margin, L' ');
-	title_str += title[global.lang];
+	title_str += title[global::lang];
 	title_str += std::wstring(r_margin, L' ');
 	
 	return title_str;
@@ -342,17 +342,17 @@ std::wstring Menu::EntryToString(size_t i) const
 	size_t r_margin = (menuPtr->Width() - 2u - entry_len) - l_margin;
 
 	entry += std::wstring(l_margin, L' ');
-	entry += entryList[i]->Name(global.lang);
+	entry += entryList[i]->Name(global::lang);
 	if (entryList[i]->HasOptions())
 	{
 		entry += L": ";
-		entry += entryList[i]->CurrentOption(global.lang);
+		entry += entryList[i]->CurrentOption(global::lang);
 	}
 	entry += std::wstring(r_margin, L' ');
 	
 	if (i == currEntryIndex && entryList[i]->HasOptions() && layoutDesc.HorizontalMargin() > 0u)
 	{
-		int num_of_opts = (int)entryList[i]->GetOptions(global.lang).size();
+		int num_of_opts = (int)entryList[i]->GetOptions(global::lang).size();
 		if (loopSwitches || entryList[i]->CurrentOptionIndex() != 0)
 			entry.front() = L'<';
 		if (loopSwitches || entryList[i]->CurrentOptionIndex() != num_of_opts - 1)
