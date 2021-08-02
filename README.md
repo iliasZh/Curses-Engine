@@ -1,6 +1,6 @@
 # Curses-Engine
 Console 'engine' for games with text graphics, based on PDCurses
-(Actually for now it is a simple snake game)
+(Actually it is a simple snake game :D)
 
 To try it out, go to releases and download the latest one. It should run OK on Win10 64-bit and a 1080p or bigger screen. Otherwise not guaranteed :D
 
