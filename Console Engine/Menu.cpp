@@ -1,4 +1,5 @@
-﻿#include "Menu.h"
+﻿#include "precompiled.h"
+#include "Menu.h"
 #include "Timer.h"
 #include "GlobalParameters.h"
 #include <thread>

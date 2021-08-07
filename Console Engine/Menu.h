@@ -24,9 +24,9 @@ public:
 	virtual int Next(bool) const { return -1; }
 	virtual int Prev(bool) const { return -1; }
 	bool HasOptions() const { return CurrentOptionIndex() != -1; }
-	virtual Options GetOptions(Lang lang) const { return {}; }
+	virtual Options GetOptions(Lang) const { return {}; }
 	virtual int CurrentOptionIndex() const { return -1; }
-	virtual std::wstring_view CurrentOption(Lang lang) const { return L""; }
+	virtual std::wstring_view CurrentOption(Lang) const { return L""; }
 protected:
 	Expression name;
 };

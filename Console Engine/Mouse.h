@@ -1,6 +1,5 @@
 #pragma once
 
-#include "WindowsFunctionality.h"
 #include <bitset>
 
 class Mouse

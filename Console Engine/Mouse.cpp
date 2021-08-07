@@ -1,3 +1,4 @@
+#include "precompiled.h"
 #include "Mouse.h"
 
 Mouse::Mouse(HWND hwnd)

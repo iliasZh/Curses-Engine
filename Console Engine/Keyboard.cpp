@@ -1,5 +1,5 @@
+#include "precompiled.h"
 #include "Keyboard.h"
-#include "WindowsFunctionality.h"
 
 Keyboard::Keyboard()
 {

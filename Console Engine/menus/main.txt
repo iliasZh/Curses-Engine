@@ -1,0 +1,16 @@
+[palette]
+[layout]
+
+[menu: MAIN MENU]
+START
+OPTIONS
+ABOUT
+EXIT
+
+[submenu: OPTIONS]
+LANGUAGE: EN, RU
+BACK
+
+[submenu: ABOUT]
+*INFO*
+BACK

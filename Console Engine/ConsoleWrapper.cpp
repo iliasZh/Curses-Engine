@@ -1,4 +1,5 @@
-﻿#include "ConsoleWrapper.h"
+﻿#include "precompiled.h"
+#include "ConsoleWrapper.h"
 #include <cassert>
 
 Window::Buffer::Buffer(USHORT width, USHORT height)
@@ -82,7 +83,7 @@ void Window::Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color b
 {
 	assert(x + text.size() <= Width());
 	assert(y < Height());
-	for (unsigned i = 0; i < text.size(); ++i)
+	for (USHORT i = 0; i < text.size(); ++i)
 		char_info::set(buf.At(x + i, y), text[i], fg, bg);
 }
 
@@ -98,13 +99,13 @@ void Window::DrawBox(Color fg, Color bg)
 	WriteChar(Width() - 1u,		0,				L'┐', fg, bg);
 	WriteChar(0,				Height() - 1u,	L'└', fg, bg);
 	WriteChar(Width() - 1u,		Height() - 1u,	L'┘', fg, bg);
-	for (unsigned i = 1u; i < Width() - 1u; ++i)
+	for (USHORT i = 1u; i < Width() - 1u; ++i)
 	{
 		WriteChar(i, 0, L'─', fg, bg);
 		WriteChar(i, Height() - 1u, L'─', fg, bg);
 	}
 
-	for (unsigned i = 1u; i < Height() - 1u; ++i)
+	for (USHORT i = 1u; i < Height() - 1u; ++i)
 	{
 		WriteChar(0, i, L'│', fg, bg);
 		WriteChar(Width() - 1u, i, L'│', fg, bg);
@@ -204,7 +205,7 @@ void Console::SetupConsole(bool maxSize)
 
 	assert(++instances == 1u); // sanity check
 
-	pStdwin = std::make_unique<Window>(*this, 0u, 0u, Width(), Height());
+	pStdwin = std::make_unique<Window>(*this, (USHORT)0u, (USHORT)0u, Width(), Height());
 }
 
 void Console::SetupFont()

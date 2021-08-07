@@ -47,6 +47,6 @@ public:
 		}
 		Refresh();
 	}
-	void OnSelect(std::wstring_view name) override
+	void OnSelect(std::wstring_view) override
 	{}
 };

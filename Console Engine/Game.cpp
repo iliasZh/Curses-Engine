@@ -1,3 +1,4 @@
+#include "precompiled.h"
 #include "Game.h"
 
 Game::Game(Console::px_count fontWidth, std::wstring_view title)
