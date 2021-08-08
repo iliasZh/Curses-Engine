@@ -1,8 +1,8 @@
 #include "precompiled.h"
 #include "Mouse.h"
 
-Mouse::Mouse(HWND hwnd)
-	: hwnd{ hwnd }
+Mouse::Mouse(HWND hwnd_)
+	: hwnd{ hwnd_ }
 {
 	wasPressed.reset();
 }

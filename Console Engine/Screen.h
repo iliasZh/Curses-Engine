@@ -1,23 +1,21 @@
-﻿#pragma once
+#pragma once
 
 #include "ConsoleWrapper.h"
 
 class Screen : public Window
 {
 public:
-	using ucoord = USHORT;
 	using Color = Window::Color;
-	Screen(const Console& con, ucoord startX, ucoord startY, ucoord widthPx, ucoord heightPx)
-		: Window{ con, startX, startY, widthPx * 2u, heightPx }
+	Screen(const Console& con, ucoord start_pos, dimensions dims)
+		: Window{ con, start_pos, { dims.w * 2u, dims.h } }
 	{}
-	ucoord WidthPx() { return Width(); }
-	ucoord HeightPx() { return Height() * 2u; }
-	void PutPixel(ucoord x, ucoord y, Color c)
+	void PutPixel(ucoord c, Color col)
 	{
-		Write(x * 2u, y, L"  ", c, c);
+		c.x *= 2u;
+		Write(c, L"  ", { col });
 	}
-	void Draw()
-	{
-		Render();
-	}
+
+	void	Draw()		const { Render(); }
+	USHORT	WidthPx()	const { return Width() / 2u; }
+	USHORT	HeightPx()	const { return Height(); }
 };

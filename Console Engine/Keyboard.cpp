@@ -11,18 +11,18 @@ bool Keyboard::IsKeyPressed(int vk_code)
 	return (GetKeyState(vk_code) & 0b1000'0000);
 }
 
-bool Keyboard::IsKeyPressedOnce(int vkcode)
+bool Keyboard::IsKeyPressedOnce(int vk_code)
 {
-	if (IsKeyPressed(vkcode))
+	if (IsKeyPressed(vk_code))
 	{
-		if (was_pressed[vkcode]) return false;
-		was_pressed[vkcode] = true;
+		if (was_pressed[vk_code]) return false;
+		was_pressed[vk_code] = true;
 	}
 	else
 	{
-		was_pressed[vkcode] = false;
+		was_pressed[vk_code] = false;
 	}
-	return was_pressed[vkcode];
+	return was_pressed[vk_code];
 }
 
 bool Keyboard::IsBindingPressed(Controls::Binding b)

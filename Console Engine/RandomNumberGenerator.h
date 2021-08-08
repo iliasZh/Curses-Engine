@@ -7,9 +7,7 @@
 class RNG
 {
 public:
-	RNG()
-		: uid{}
-	{}
+	RNG() : uid{} {}
 	int UniformIntDist(int min, int max)
 	{
 		assert(min < max);
@@ -17,7 +15,7 @@ public:
 		return uid(rng);
 	}
 private:
-	std::random_device rd{};
-	std::mt19937 rng{ rd() };
-	std::uniform_int_distribution<int> uid;
+	std::random_device					rd{};
+	std::mt19937						rng{ rd() };
+	std::uniform_int_distribution<int>	uid;
 };

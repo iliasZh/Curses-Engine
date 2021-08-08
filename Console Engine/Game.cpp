@@ -1,8 +1,8 @@
 #include "precompiled.h"
 #include "Game.h"
 
-Game::Game(Console::px_count fontWidth, std::wstring_view title)
-	: console{ fontWidth, title }
+Game::Game(Console::px_count font_width_, std::wstring_view title_)
+	: console{ font_width_, title_ }
 {}
 
 void Game::Go()

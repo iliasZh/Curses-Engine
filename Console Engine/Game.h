@@ -6,16 +6,18 @@
 class Game
 {
 public:
-	Game()	= default;
-	~Game()	= default;
-	Game(Console::px_count fontWidth, std::wstring_view title);
-	Game(const Game&)				= delete;
-	Game& operator=(const Game&)	= delete;
+			Game(Console::px_count font_width, std::wstring_view title);
+			Game()					= default;
+			~Game()					= default;
+			Game(const Game&)		= delete;
+			Game(Game&&)			= delete;
+	Game&	operator=(const Game&)	= delete;
+	Game&	operator=(Game&&)		= delete;
 
-	void Go();
-	void Logic();
-	void DrawFrame();
+	void	Go();
+	void	Logic();
+	void	DrawFrame();
 private:
-	Console console;
-	Keyboard kbd;
+	Console		console;
+	Keyboard	kbd;
 };

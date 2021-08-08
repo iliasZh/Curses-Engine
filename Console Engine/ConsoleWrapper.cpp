@@ -1,19 +1,20 @@
-﻿#include "precompiled.h"
+#include "precompiled.h"
 #include "ConsoleWrapper.h"
-#include <cassert>
 
-Window::Buffer::Buffer(USHORT width, USHORT height)
-	: width{ width }, height{ height }
+Window::Buffer::Buffer(dimensions dims_)
+	: dims{ dims_ }
 	, data{ nullptr }
 {
-	if (width == 0u || height == 0u)
+	if (dims.w == 0u || dims.h == 0u)
+	{
 		THROW_CONSOLE_EXCEPTION("Buffer ctor", "attempting to allocate zero-size buffer");
-	data = new CHAR_INFO[width * height];
+	}
+	data = new CHAR_INFO[dims.w * dims.h];
 	Clear(Color::Black);
 }
 
 Window::Buffer::Buffer(Buffer&& buf) noexcept
-	: width{ buf.width }, height{ buf.height }
+	: dims{ buf.dims }
 	, data{ buf.data }
 {
 	buf.data = nullptr;
@@ -24,8 +25,7 @@ Window::Buffer& Window::Buffer::operator=(Buffer&& buf) noexcept
 	if (this != &buf)
 	{
 		delete[] data;
-		width = buf.width;
-		height = buf.height;
+		dims = buf.dims;
 		data = buf.data;
 		buf.data = nullptr;
 	}
@@ -33,28 +33,30 @@ Window::Buffer& Window::Buffer::operator=(Buffer&& buf) noexcept
 }
 
 
-CHAR_INFO& Window::Buffer::At(USHORT x, USHORT y)
+CHAR_INFO& Window::Buffer::At(ucoord c)
 {
-	assert(x < width&& y < height);
-	return data[y * width + x];
+	assert(c.x < dims.w && c.y < dims.h);
+	return data[c.y * dims.w + c.x];
 }
 
 void Window::Buffer::Clear(Color c)
 {
-	for (unsigned i = 0u; i < USHORT(width * height); ++i)
+	for (USHORT i = 0u; i < dims.w * dims.h; ++i)
+	{
 		char_info::set(data[i], L' ', c);
+	}
 }
 
 
-Window::Window(const Console& con, USHORT startX, USHORT startY, USHORT width, USHORT height)
+Window::Window(const Console& con, ucoord start, dimensions dims)
 	: con{ con }
-	, startPos{ (SHORT)startX, (SHORT)startY }
-	, buf{ width, height }
+	, startPos{ start }
+	, buf{ dims }
 {
 	assert(con.IsInitialized());
-	assert(width > 1u && height > 1u);
-	assert(startX + width <= con.Width());
-	assert(startY + height <= con.Height());
+	assert(dims.w > 1u && dims.h > 1u);
+	assert(startPos.x + dims.w <= con.Width());
+	assert(startPos.y + dims.h <= con.Height());
 }
 
 Window::Window(Window&& win) noexcept
@@ -79,81 +81,88 @@ Window& Window::operator=(Window&& win) noexcept
 	return *this;
 }
 
-void Window::Write(USHORT x, USHORT y, std::wstring_view text, Color fg, Color bg)
+void Window::Write(ucoord c, std::wstring_view text, ColorPair col)
 {
-	assert(x + text.size() <= Width());
-	assert(y < Height());
-	for (USHORT i = 0; i < text.size(); ++i)
-		char_info::set(buf.At(x + i, y), text[i], fg, bg);
+	assert(c.x + text.size() <= Width());
+	assert(c.y < Height());
+	for (USHORT i = 0u; i < (USHORT)text.size(); ++i)
+	{
+		char_info::set(buf.At({ USHORT(c.x + i), c.y }), text[i], col);
+	}
 }
 
-void Window::WriteChar(USHORT x, USHORT y, wchar_t ch, Color fg, Color bg)
+void Window::WriteChar(ucoord c, wchar_t ch, ColorPair col)
 {
-	assert(x < Width() && y < Height());
-	char_info::set(buf.At(x, y), ch, fg, bg);
+	assert(c.x < Width() && c.y < Height());
+	char_info::set(buf.At(c), ch, col);
 }
 
-void Window::DrawBox(Color fg, Color bg)
+void Window::DrawBox(ColorPair col)
 {
-	WriteChar(0,				0,				L'┌', fg, bg);
-	WriteChar(Width() - 1u,		0,				L'┐', fg, bg);
-	WriteChar(0,				Height() - 1u,	L'└', fg, bg);
-	WriteChar(Width() - 1u,		Height() - 1u,	L'┘', fg, bg);
+	WriteChar({ 0,				0				},	L'\x250c', col);	// '┌'
+	WriteChar({ Width() - 1u,	0				},	L'\x2510', col);	// '┐'
+	WriteChar({ 0,				Height() - 1u	},	L'\x2514', col);	// '└'
+	WriteChar({ Width() - 1u,	Height() - 1u	},	L'\x2518', col);	// '┘'
 	for (USHORT i = 1u; i < Width() - 1u; ++i)
 	{
-		WriteChar(i, 0, L'─', fg, bg);
-		WriteChar(i, Height() - 1u, L'─', fg, bg);
+		WriteChar({ i, 0				}, L'\x2500', col);	// '─'
+		WriteChar({ i, Height() - 1u	}, L'\x2500', col);	// '─'
 	}
 
 	for (USHORT i = 1u; i < Height() - 1u; ++i)
 	{
-		WriteChar(0, i, L'│', fg, bg);
-		WriteChar(Width() - 1u, i, L'│', fg, bg);
+		WriteChar({ 0,				i }, L'\x2502', col);	// '│'
+		WriteChar({ Width() - 1u,	i }, L'\x2502', col);	// '│'
 	}
 }
 
 void Window::Render() const
 {
-	con.Render(buf.Data(), buf.Size(), startPos);
+	con.Render(buf.Data(), startPos, buf.Dimensions());
 }
 
 
-Console::Console(USHORT width, USHORT height, px_count fontWidth, std::wstring_view title)
+Console::Console(dimensions dims_, px_count font_width_, std::wstring_view title_)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, conIn{ GetStdHandle(STD_INPUT_HANDLE) }
-	, width{ width }, height{ height }
-	, fontWidth{ fontWidth }
-	, title{ title }
+	, dims{ dims_ }
+	, fontWidth{ font_width_ }
+	, title{ title_ }
 	, pStdwin{}
 {
 	SetupConsole(false);
 }
 
-Console::Console(px_count fontWidth, std::wstring_view title)
+Console::Console(px_count font_width_, std::wstring_view title_)
 	: conOut{ GetStdHandle(STD_OUTPUT_HANDLE) }
 	, conIn{ GetStdHandle(STD_INPUT_HANDLE) }
-	, width{ 0u }, height{ 0u }
-	, fontWidth{ fontWidth }
-	, title{ title }
+	, dims{ 0u, 0u }
+	, fontWidth{ font_width_ }
+	, title{ title_ }
 	, pStdwin{}
 {
 	SetupConsole(true);
 }
 
-void Console::Render(const CHAR_INFO* buffer, COORD size, COORD drawStart) const
+void Console::Render(const CHAR_INFO* buffer, ucoord start_pos, dimensions buf_dims) const
 {
-	assert(size.X <= width);
-	assert(size.Y <= height);
+	assert(buf_dims.w <= Width());
+	assert(buf_dims.h <= Height());
 	SMALL_RECT draw_region = 
 	{ 
-		drawStart.X, drawStart.Y, 
-		drawStart.X + size.X - 1, drawStart.Y + size.Y - 1
+		(SHORT)start_pos.x,
+		(SHORT)start_pos.y, 
+		(SHORT)start_pos.x + buf_dims.w - 1,
+		(SHORT)start_pos.y + buf_dims.h - 1
 	};
-	assert(draw_region.Right < width);
-	assert(draw_region.Bottom < height);
+	assert(draw_region.Right	< Width());
+	assert(draw_region.Bottom	< Height());
 
-	if (WriteConsoleOutput(conOut, buffer, size, { 0,0 }, &draw_region) == 0)
+	if (WriteConsoleOutput(conOut, buffer, { (SHORT)buf_dims.w, (SHORT)buf_dims.h },
+							{ 0,0 }, &draw_region) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("Render", "failed to draw buffer");
+	}
 }
 
 void Console::SetCursorMode(Cursor mode)
@@ -176,22 +185,26 @@ void Console::SetCursorMode(Cursor mode)
 	}
 
 	if (SetConsoleCursorInfo(conOut, &info) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("SetCursorMode", "failed to set cursor mode");
+	}
 }
 
 
-void Console::SetupConsole(bool maxSize)
+void Console::SetupConsole(bool maximize_size)
 {
 	assert(instances == 0u); // sanity check
 
 	if (conOut == INVALID_HANDLE_VALUE)
+	{
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console handle");
+	}
 
 	SetCursorMode(cursorMode);
 
 	SetupFont();
 
-	SetupScreenBuffer(maxSize);
+	SetupScreenBuffer(maximize_size);
 
 	SetTitleAndGetHwnd();
 
@@ -205,7 +218,7 @@ void Console::SetupConsole(bool maxSize)
 
 	assert(++instances == 1u); // sanity check
 
-	pStdwin = std::make_unique<Window>(*this, (USHORT)0u, (USHORT)0u, Width(), Height());
+	pStdwin = std::make_unique<Window>(*this, ucoord{ 0u, 0u }, dimensions{ Width(), Height() });
 }
 
 void Console::SetupFont()
@@ -222,23 +235,23 @@ void Console::SetupFont()
 	wcscpy_s(cfi.FaceName, L"Consolas");
 
 	if (SetCurrentConsoleFontEx(conOut, FALSE, &cfi) == NULL)
+	{
 		THROW_CONSOLE_EXCEPTION("Console contrustor", "failed to set the font size");
+	}
 
 	Sleep(50);	// wait a bit for changes to apply...
 }
 
-void Console::SetupScreenBuffer(bool maxSize)
+void Console::SetupScreenBuffer(bool maximize_size)
 {
 	auto [max_w, max_h] = GetLargestConsoleWindowSize(conOut); // sweet c++14/17 (not sure which)
-	if (maxSize)
+	if (maximize_size)
 	{
-		width = max_w;
-		height = max_h;
+		dims = { (USHORT)max_w, (USHORT)max_h };
 	}
-	else
+	else // check that the user requested a reasonable size
 	{
-		// check that the user requested a reasonable size
-		assert(width <= max_w && height <= max_h);
+		assert(Width() <= max_w && Height() <= max_h);
 	}
 
 	// at any time console window size must not exceed the size of console screen buffer
@@ -246,15 +259,21 @@ void Console::SetupScreenBuffer(bool maxSize)
 	// set window size to minimum so that it is possible to set screen buffer size w/o problem
 	SMALL_RECT r{ 0,0,1,1 };
 	if (SetConsoleWindowInfo(conOut, TRUE, &r) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to (temporarily) set console window size to 1*1");
+	}
 
-	COORD c{ (SHORT)width, (SHORT)height };
+	COORD c{ (SHORT)Width(), (SHORT)Height() };
 	if (SetConsoleScreenBufferSize(conOut, c) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to set requested console screen buffer size");
+	}
 
-	r = { 0,0,SHORT(width - 1),SHORT(height - 1) };
+	r = { 0,0,SHORT(Width() - 1u),SHORT(Height() - 1u) };
 	if (SetConsoleWindowInfo(conOut, TRUE, &r) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to set requested console window size");
+	}
 }
 
 void Console::SetTitleAndGetHwnd()
@@ -265,7 +284,9 @@ void Console::SetTitleAndGetHwnd()
 
 	// find by title
 	if ((hConsole = FindWindow(NULL, setup.data())) == NULL)
+	{
 		THROW_CONSOLE_EXCEPTION("Console constructor, FindWindow()", "failed to get the console handle");
+	}
 
 	SetConsoleTitle(title.data()); // set requested title
 }
@@ -279,7 +300,9 @@ void Console::GetMonitorWorkAreaSize()
 	MONITORINFO mi{};
 	mi.cbSize = sizeof(mi);
 	if (GetMonitorInfoW(h_mon, &mi) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to get monitor info");
+	}
 	workAreaWidth = px_count(mi.rcWork.right - mi.rcWork.left);
 	workAreaHeight = px_count(mi.rcWork.bottom - mi.rcWork.top);
 }
@@ -292,9 +315,13 @@ void Console::SetupStyle()
 	console_style = GetWindowLong(hConsole, GWL_STYLE); // get window style
 
 	if (console_style & WS_SIZEBOX)			// do not allow to resize window
+	{
 		console_style ^= WS_SIZEBOX;		// set to false
+	}
 	if (console_style & WS_MAXIMIZEBOX)		// do not allow to maximize window
+	{
 		console_style ^= WS_MAXIMIZEBOX;	// set to false
+	}
 	SetWindowLong(hConsole, GWL_STYLE, console_style);	// set the new style
 	
 	// MSDN:
@@ -317,14 +344,18 @@ void Console::DisableTextSelection()
 	// don't use output handle like me, stupid mistake
 	// SetMode will silently return a BOOL == 0 and proceed as normal (unless you catch it like here)
 	if (GetConsoleMode(conIn, &prev_mode) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to get console mode");
+	}
 
 	// set mode with ext flags but without quick edit mode
 	// this disables mouse text selection
 	// profit!
 	if (SetConsoleMode(conIn, ENABLE_EXTENDED_FLAGS |
 		(prev_mode & ~ENABLE_QUICK_EDIT_MODE)) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("SetupConsole", "failed to set console mode");
+	}
 }
 
 void Console::CenterWindow()
@@ -335,19 +366,19 @@ void Console::CenterWindow()
 	WINDOWINFO win_info;
 	win_info.cbSize = sizeof(win_info);
 	if (GetWindowInfo(hConsole, &win_info) == 0)
+	{
 		THROW_CONSOLE_EXCEPTION("Console ctor", "failed to get window size");
-	px_count width_px = px_count(win_info.rcWindow.right - win_info.rcWindow.left);
-	px_count height_px = px_count(win_info.rcWindow.bottom - win_info.rcWindow.top);
+	}
+	px_count width_px	= px_count(win_info.rcWindow.right	- win_info.rcWindow.left);
+	px_count height_px	= px_count(win_info.rcWindow.bottom	- win_info.rcWindow.top);
 
 	// center it!
 	SetWindowPos
 	(
 		hConsole, HWND_TOP,
-		((int)workAreaWidth - (int)width_px) / 2,	// may be negative! only slightly though
-		((int)workAreaHeight - (int)height_px) / 2,	// may be negative! only slightly though
+		((int)workAreaWidth		- (int)width_px)	/ 2,	// may be negative! only slightly though
+		((int)workAreaHeight	- (int)height_px)	/ 2,	// may be negative! only slightly though
 		width_px, height_px,
 		SWP_NOSIZE									// do not change size (ignore two prev params)
 	);
 }
-
-
