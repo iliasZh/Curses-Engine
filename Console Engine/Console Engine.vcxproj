@@ -181,6 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharInfo.h" />
+    <ClInclude Include="ConsoleTypes.h" />
     <ClInclude Include="ConsoleWrapper.h" />
     <ClInclude Include="Controls.h" />
     <ClInclude Include="ExceptionBase.h" />

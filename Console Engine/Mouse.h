@@ -13,5 +13,5 @@ public:
 	POINT	GetPos();
 private:
 	HWND			hwnd;
-	std::bitset<2>	wasPressed;
+	std::bitset<2u>	wasPressed;
 };

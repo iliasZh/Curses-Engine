@@ -10,11 +10,11 @@ int main()
 {
 	try
 	{
-		using Color = Window::Color;
 		Console con{ 15u };
 		con.SetCursorMode(Console::Cursor::Invisible);
 		con.Stdwin().DrawBox(Color::Cyan);
-		con.Stdwin().Write({ 60u, 15u }, L"MIDDLE TEXT", { Color::DarkYellow, Color::Black });
+		con.Stdwin().Write({ 60u, 15u }, L"MIDDLE TEXT", { Color::Black, Color::Cyan });
+		con.Stdwin().Write({ 60u, 16u }, L"MIDDLE TEXT", { Color::Black, Color::DarkCyan });
 		con.Stdwin().Render();
 		Sleep(5000);
 	}

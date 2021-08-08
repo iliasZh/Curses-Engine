@@ -41,7 +41,7 @@ CHAR_INFO& Window::Buffer::At(ucoord c)
 
 void Window::Buffer::Clear(Color c)
 {
-	for (USHORT i = 0u; i < dims.w * dims.h; ++i)
+	for (uint16_t i = 0u; i < dims.w * dims.h; ++i)
 	{
 		char_info::set(data[i], L' ', c);
 	}
@@ -85,9 +85,9 @@ void Window::Write(ucoord c, std::wstring_view text, ColorPair col)
 {
 	assert(c.x + text.size() <= Width());
 	assert(c.y < Height());
-	for (USHORT i = 0u; i < (USHORT)text.size(); ++i)
+	for (uint16_t i = 0u; i < (uint16_t)text.size(); ++i)
 	{
-		char_info::set(buf.At({ USHORT(c.x + i), c.y }), text[i], col);
+		char_info::set(buf.At({ uint16_t(c.x + i), c.y }), text[i], col);
 	}
 }
 
@@ -103,13 +103,13 @@ void Window::DrawBox(ColorPair col)
 	WriteChar({ Width() - 1u,	0				},	L'\x2510', col);	// '┐'
 	WriteChar({ 0,				Height() - 1u	},	L'\x2514', col);	// '└'
 	WriteChar({ Width() - 1u,	Height() - 1u	},	L'\x2518', col);	// '┘'
-	for (USHORT i = 1u; i < Width() - 1u; ++i)
+	for (uint16_t i = 1u; i < Width() - 1u; ++i)
 	{
 		WriteChar({ i, 0				}, L'\x2500', col);	// '─'
 		WriteChar({ i, Height() - 1u	}, L'\x2500', col);	// '─'
 	}
 
-	for (USHORT i = 1u; i < Height() - 1u; ++i)
+	for (uint16_t i = 1u; i < Height() - 1u; ++i)
 	{
 		WriteChar({ 0,				i }, L'\x2502', col);	// '│'
 		WriteChar({ Width() - 1u,	i }, L'\x2502', col);	// '│'
@@ -247,7 +247,7 @@ void Console::SetupScreenBuffer(bool maximize_size)
 	auto [max_w, max_h] = GetLargestConsoleWindowSize(conOut); // sweet c++14/17 (not sure which)
 	if (maximize_size)
 	{
-		dims = { (USHORT)max_w, (USHORT)max_h };
+		dims = { (uint16_t)max_w, (uint16_t)max_h };
 	}
 	else // check that the user requested a reasonable size
 	{

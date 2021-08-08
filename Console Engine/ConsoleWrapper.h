@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WindowsFunctionality.h"
+#include "precompiled.h"
 #include "ExceptionBase.h"
 #include "CharInfo.h"
 #include <cassert>
@@ -10,20 +10,6 @@ class Console;
 class Window
 {
 public:
-	using Color		= char_info::Color;
-	using ColorPair	= char_info::ColorPair;
-	struct ucoord
-	{
-		ucoord(USHORT x_, USHORT y_) : x{ x_ }, y{ y_ } {}
-		USHORT x;
-		USHORT y;
-	};
-	struct dimensions
-	{
-		dimensions(USHORT w_, USHORT h_) : w{ w_ }, h{ h_ } {}
-		USHORT w;
-		USHORT h;
-	};
 	class Buffer
 	{
 	public:
@@ -58,12 +44,12 @@ public:
 
 	void			Render()		const;
 	const Console&	GetConsole()	const	{ return con; }
-	USHORT			Left()			const	{ return startPos.x; }
-	USHORT			Top()			const	{ return startPos.y; }
-	USHORT			Right()			const	{ return Left() + Width() - 1u; }
-	USHORT			Bottom()		const	{ return Top() + Height() - 1u; }
-	USHORT			Width()			const	{ return buf.Dimensions().w; }
-	USHORT			Height()		const	{ return buf.Dimensions().h; }
+	uint16_t			Left()			const	{ return startPos.x; }
+	uint16_t			Top()			const	{ return startPos.y; }
+	uint16_t			Right()			const	{ return Left() + Width() - 1u; }
+	uint16_t			Bottom()		const	{ return Top() + Height() - 1u; }
+	uint16_t			Width()			const	{ return buf.Dimensions().w; }
+	uint16_t			Height()		const	{ return buf.Dimensions().h; }
 private:
 	const Console&	con;
 	ucoord			startPos;
@@ -74,8 +60,6 @@ private:
 class Console
 {
 public:
-	using ucoord = Window::ucoord;
-	using dimensions = Window::dimensions;
 	class Exception : public ExceptionBase
 	{
 	public:
@@ -111,8 +95,8 @@ public:
 public:
 	Window&		Stdwin()				{ return *(pStdwin.get()); }
 	bool		IsInitialized() const	{ return instances == 1u; }
-	USHORT		Width()			const	{ return dims.w; }
-	USHORT		Height()		const	{ return dims.h; }
+	uint16_t		Width()			const	{ return dims.w; }
+	uint16_t		Height()		const	{ return dims.h; }
 	HWND		WindowHandle()	const	{ return hConsole; }
 	px_count	FontWidth()		const	{ return fontWidth; }
 private: // setup methods
