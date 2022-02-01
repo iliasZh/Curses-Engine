@@ -1,6 +1,5 @@
-# Curses-Engine
-Console 'engine' for games with text graphics, based on PDCurses
-(Actually it is a simple snake game :D)
+# Snake console game
+A simple snake game in Windows command prompt.
 
 To try it out, go to releases and download the latest one. It should run OK on Win10 64-bit and a 1080p or bigger screen. Otherwise not guaranteed :D
 
@@ -10,5 +9,6 @@ because I found Windows terminal related API a bit inconvenient.
 
 # How to build
 
-This project is abandoned, but it probalby *may* be built as is, assuming you deal with PDCurses.
-Go check out the [newer repo](https://github.com/iliasZh/console-engine) with much better (hopefully) code.
+This project is abandoned, but it probalby *may* be built as is, assuming you built and linked PDCurses.
+Go check out the [newer repo](https://github.com/iliasZh/console-engine) with (hopefully) much better code.
+It is meant to be a 3d rendering engine - rasterizer, not a raytracer. I haven't built any games on top of it yet, though :(
